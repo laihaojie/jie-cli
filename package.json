@@ -1,6 +1,6 @@
 {
     "name": "ajie-cli",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "my cli tool",
     "main": "index.js",
     "type": "module",
@@ -17,8 +17,8 @@
         "cli"
     ],
     "files": [
-      "bin",
-      "package.json"
+        "bin",
+        "package.json"
     ],
     "author": "laihaojie",
     "license": "ISC",
@@ -27,6 +27,7 @@
     },
     "homepage": "https://github.com/laihaojie/ajie-cli#readme",
     "dependencies": {
+        "chalk": "^4.1.2",
         "inquirer": "^8.2.0"
     }
 }
