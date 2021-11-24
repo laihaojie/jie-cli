@@ -1,23 +1,32 @@
 {
-  "name": "ajie-cli",
-  "version": "1.0.0",
-  "description": "my cli tool",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/laihaojie/ajie-cli.git"
-  },
-  "keywords": [
-    "node",
-    "cli"
-  ],
-  "author": "laihaojie",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/laihaojie/ajie-cli/issues"
-  },
-  "homepage": "https://github.com/laihaojie/ajie-cli#readme"
+    "name": "ajie-cli",
+    "version": "1.0.0",
+    "description": "my cli tool",
+    "main": "index.js",
+    "type": "module",
+    "bin": "./bin/index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/laihaojie/ajie-cli.git"
+    },
+    "keywords": [
+        "node",
+        "cli"
+    ],
+    "files": [
+      "bin",
+      "package.json"
+    ],
+    "author": "laihaojie",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/laihaojie/ajie-cli/issues"
+    },
+    "homepage": "https://github.com/laihaojie/ajie-cli#readme",
+    "dependencies": {
+        "inquirer": "^8.2.0"
+    }
 }
