@@ -1,3 +1,5 @@
+import chalk from 'chalk'
+
 /**
  * Created by PhpStorm.
  * User:  iyahe@qq.com (天明)
@@ -7,10 +9,10 @@
  */
 import fs from "fs"
 /**
- * 允许被复制的文件后缀列表
+ * 不允许被复制的文件后缀列表
  * @type {string[]}
  */
-const copyExt = ['.html', '.php', 'js']
+const copyExt = []
 /**
  * 复制一个文件夹下的文件到另一个文件夹
  * @param src 源文件夹
@@ -35,6 +37,9 @@ export const copyDir = function(src, dst) {
                 if (st.isFile()) {
                     // 允许的后缀才可以被复制
                     if (contains(copyExt, _src)) {
+
+                        console.log(chalk.blue(`正在创建文件: ${path}`))
+
                         // 创建读取流
                         readable = fs.createReadStream(_src)
                         // 创建写入流
@@ -47,6 +52,7 @@ export const copyDir = function(src, dst) {
                 }
                 // 如果是目录则递归调用自身
                 else if (st.isDirectory()) {
+                    console.log(chalk.blue(`正在创建文件夹: ${path}`))
                     exists(_src, _dst, copyDir)
                 }
             })
@@ -77,10 +83,10 @@ export const exists = function(src, dst, callback) {
  * @returns {boolean}
  */
 export const contains = function(arr, obj) {
-    let flag = false
+    let flag = true
     arr.map((val) => {
         if (obj.includes(val)) {
-            flag = true
+            flag = false
         }
     })
     return flag
