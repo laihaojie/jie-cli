@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { stdout as log } from "single-line-log"
 
 /**
  * Created by PhpStorm.
@@ -8,6 +9,8 @@ import chalk from 'chalk'
  * Description:
  */
 import fs from "fs"
+let fileCount;
+let count = 0
 /**
  * 不允许被复制的文件后缀列表
  * @type {string[]}
@@ -38,27 +41,64 @@ export const copyDir = function(src, dst) {
                     // 允许的后缀才可以被复制
                     if (contains(copyExt, _src)) {
 
-                        console.log(chalk.blue(`正在创建文件: ${path}`))
-
                         // 创建读取流
                         readable = fs.createReadStream(_src)
                         // 创建写入流
                         writable = fs.createWriteStream(_dst)
                         // 通过管道来传输流
                         readable.pipe(writable)
+                        count++
+                        log(chalk.blue(`正在创建文件: ${path} ${(count /fileCount) * 100}%`))
+                        // log(chalk.blue(`创建进度: ${(count /fileCount) * 100}%`))
+                        // log(chalk.blue(`创建进度: ${(count /fileCount) * 100}%`))
+                        if (fileCount == count) {
+                            console.log(chalk.yellow(`\r\n创建完成`));
+                            console.log(chalk.yellow(`
+                            
+                          
+  　　┏┓　　　┏┓+ +
+  　┏┛┻━━━┛┻┓ + +
+  　┃　　　　　　　┃
+  　┃　　　━　　　┃ ++ + + +
+   ████━████ ┃+
+  　┃　　　　　　　┃ +
+  　┃　　　┻　　　┃
+  　┃　　　　　　　┃ + +
+  　┗━┓　　　┏━┛
+  　　　┃　　　┃
+  　　　┃　　　┃ + + + +
+  　　　┃　　　┃
+  　　　┃　　　┃ +  神兽保佑
+  　　　┃　　　┃    代码无bug
+  　　　┃　　　┃　　+
+  　　　┃　 　　┗━━━┓ + +
+  　　　┃ 　　　　　　　┣┓
+  　　　┃ 　　　　　　　┏┛
+  　　　┗┓┓┏━┳┓┏┛ + + + +
+  　　　　┃┫┫　┃┫┫
+  　　　　┗┻┛　┗┻┛+ + + +
+                          
+                            
+                            `));
+                        }
+
                     } else {
                         // console.log(_src + ' 不允许被复制!!!')
                     }
                 }
                 // 如果是目录则递归调用自身
                 else if (st.isDirectory()) {
-                    console.log(chalk.blue(`正在创建文件夹: ${path}`))
+                    log(chalk.blue(`正在创建文件夹: ${path} ${(count /fileCount) * 100}%`))
+                    // console.log(chalk.blue(`正在创建文件夹: ${path}`))
                     exists(_src, _dst, copyDir)
                 }
             })
         })
+
     })
 }
+
+
 /**
  * 在复制目录前需要判断该目录是否存在，
  * 不存在需要先创建目录
@@ -66,7 +106,8 @@ export const copyDir = function(src, dst) {
  * @param dst
  * @param callback
  */
-export const exists = function(src, dst, callback) {
+export const exists = function(src, dst, callback, count) {
+    if (count) fileCount = count
     // 如果路径存在，则返回 true，否则返回 false。
     if (fs.existsSync(dst)) {
         callback(src, dst)
@@ -75,6 +116,7 @@ export const exists = function(src, dst, callback) {
             callback(src, dst)
         })
     }
+
 }
 /**
  * 判断数组中的元素是否包含此字符串
