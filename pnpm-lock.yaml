@@ -3,12 +3,14 @@ lockfileVersion: 5.4
 specifiers:
   '@djie/eslint-config': ^1.0.11
   chalk: ^4.1.2
+  degit: ^2.8.4
   eslint: ^8.19.0
   inquirer: ^8.2.0
   single-line-log: ^1.1.2
 
 dependencies:
   chalk: 4.1.2
+  degit: 2.8.4
   inquirer: 8.2.4
   single-line-log: 1.1.2
 
@@ -85,9 +87,6 @@ packages:
     peerDependencies:
       eslint: '>=7.4.0'
       typescript: '>=3.9'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
     dependencies:
       '@djie/eslint-config-basic': 1.0.11_rywvbqnelbznwddhxv2glfjuay
       '@typescript-eslint/eslint-plugin': 5.30.6_rywvbqnelbznwddhxv2glfjuay
@@ -654,6 +653,12 @@ packages:
       has-property-descriptors: 1.0.0
       object-keys: 1.1.1
     dev: true
+
+  /degit/2.8.4:
+    resolution: {integrity: sha512-vqYuzmSA5I50J882jd+AbAhQtgK6bdKUJIex1JNfEUPENCgYsxugzKVZlFyMwV4i06MmnV47/Iqi5Io86zf3Ng==}
+    engines: {node: '>=8.0.0'}
+    hasBin: true
+    dev: false
 
   /dir-glob/3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}

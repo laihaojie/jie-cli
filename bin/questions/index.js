@@ -5,6 +5,5 @@ export default () => {
   return inquirer.prompt([
     /* Pass your questions in here */
     projectType(),
-
   ])
 }
