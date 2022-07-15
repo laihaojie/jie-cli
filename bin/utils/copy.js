@@ -21,18 +21,18 @@ const copyExt = []
  * @param src 源文件夹
  * @param dst 目标文件夹
  */
-export const copyDir = function(src, dst) {
+export const copyDir = function (src, dst) {
     // 读取目录中的所有文件/目录
-    fs.readdir(src, function(err, paths) {
+    fs.readdir(src, function (err, paths) {
         if (err) {
             throw err
         }
-        paths.forEach(function(path) {
+        paths.forEach(function (path) {
             const _src = src + '/' + path
             const _dst = dst + '/' + path
             let readable;
             let writable
-            fs.stat(_src, function(err, st) {
+            fs.stat(_src, function (err, st) {
                 if (err) {
                     throw err
                 }
@@ -48,7 +48,7 @@ export const copyDir = function(src, dst) {
                         // 通过管道来传输流
                         readable.pipe(writable)
                         count++
-                        log(chalk.blue(`正在创建文件: ${path} ${(count /fileCount) * 100}%`))
+                        log(chalk.blue(`正在创建文件: ${path} ${(count / fileCount) * 100}%`))
                         // log(chalk.blue(`创建进度: ${(count /fileCount) * 100}%`))
                         // log(chalk.blue(`创建进度: ${(count /fileCount) * 100}%`))
                         if (fileCount == count) {
@@ -88,7 +88,7 @@ export const copyDir = function(src, dst) {
                 }
                 // 如果是目录则递归调用自身
                 else if (st.isDirectory()) {
-                    log(chalk.blue(`正在创建文件夹: ${path} ${(count /fileCount) * 100}%`))
+                    log(chalk.blue(`正在创建文件夹: ${path} ${(count / fileCount) * 100}%`))
                     // console.log(chalk.blue(`正在创建文件夹: ${path}`))
                     exists(_src, _dst, copyDir)
                 }
@@ -106,13 +106,13 @@ export const copyDir = function(src, dst) {
  * @param dst
  * @param callback
  */
-export const exists = function(src, dst, callback, count) {
+export const exists = function (src, dst, callback, count) {
     if (count) fileCount = count
     // 如果路径存在，则返回 true，否则返回 false。
     if (fs.existsSync(dst)) {
         callback(src, dst)
     } else {
-        fs.mkdir(dst, function() {
+        fs.mkdir(dst, function () {
             callback(src, dst)
         })
     }
@@ -124,7 +124,7 @@ export const exists = function(src, dst, callback, count) {
  * @param obj
  * @returns {boolean}
  */
-export const contains = function(arr, obj) {
+export const contains = function (arr, obj) {
     let flag = true
     arr.map((val) => {
         if (obj.includes(val)) {
