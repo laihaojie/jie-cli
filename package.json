@@ -1,5 +1,5 @@
 {
-  "name": "ajie-cli",
+  "name": "@djie/cli",
   "type": "module",
   "version": "1.0.2",
   "description": "my cli tool",
