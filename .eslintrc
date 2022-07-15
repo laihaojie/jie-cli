@@ -1,0 +1,6 @@
+{
+  "extends": ["@djie"],
+  "rules": {
+    "no-console": "off"
+  }
+}

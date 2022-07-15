@@ -1,34 +1,41 @@
 {
-    "name": "ajie-cli",
-    "version": "1.0.2",
-    "description": "my cli tool",
-    "main": "index.js",
-    "type": "module",
-    "bin": "./bin/index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/laihaojie/ajie-cli.git"
-    },
-    "keywords": [
-        "node",
-        "cli"
-    ],
-    "files": [
-        "bin",
-        "package.json"
-    ],
-    "author": "laihaojie",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/laihaojie/ajie-cli/issues"
-    },
-    "homepage": "https://github.com/laihaojie/ajie-cli#readme",
-    "dependencies": {
-        "chalk": "^4.1.2",
-        "inquirer": "^8.2.0",
-        "single-line-log": "^1.1.2"
-    }
+  "name": "ajie-cli",
+  "type": "module",
+  "version": "1.0.2",
+  "description": "my cli tool",
+  "author": "laihaojie",
+  "license": "ISC",
+  "homepage": "https://github.com/laihaojie/ajie-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laihaojie/ajie-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/laihaojie/ajie-cli/issues"
+  },
+  "keywords": [
+    "node",
+    "cli"
+  ],
+  "main": "index.js",
+  "bin": {
+    "jie": "./bin/index.js"
+  },
+  "files": [
+    "bin",
+    "package.json"
+  ],
+  "scripts": {
+    "lint:fix": "eslint . --fix",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.0",
+    "single-line-log": "^1.1.2"
+  },
+  "devDependencies": {
+    "@djie/eslint-config": "^1.0.11",
+    "eslint": "^8.19.0"
+  }
 }
