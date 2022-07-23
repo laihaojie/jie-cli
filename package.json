@@ -1,7 +1,7 @@
 {
   "name": "@djie/cli",
   "type": "module",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
