@@ -1,7 +1,7 @@
 {
   "name": "@djie/cli",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -26,6 +26,7 @@
     "package.json"
   ],
   "scripts": {
+    "dev": "node ./bin/index.js",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
   },
