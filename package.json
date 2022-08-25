@@ -1,6 +1,5 @@
 {
   "name": "@djie/cli",
-  "type": "module",
   "version": "1.0.4",
   "description": "my cli tool",
   "author": "laihaojie",
@@ -17,7 +16,6 @@
     "node",
     "cli"
   ],
-  "main": "index.js",
   "bin": {
     "jie": "./bin/index.js"
   },
@@ -26,7 +24,8 @@
     "package.json"
   ],
   "scripts": {
-    "dev": "node ./bin/index.js",
+    "dev": "tsc && node ./bin/index.js",
+    "build": "tsc",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
   },
@@ -38,6 +37,7 @@
   },
   "devDependencies": {
     "@djie/eslint-config": "^1.0.11",
-    "eslint": "^8.19.0"
+    "eslint": "^8.19.0",
+    "typescript": "^4.7.4"
   }
 }
