@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -26,6 +26,7 @@
   "scripts": {
     "dev": "tsc && node ./bin/index.js",
     "build": "tsc",
+    "release": "npx bumpp && npm publish --access public --registry https://registry.npmjs.org",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
   },
