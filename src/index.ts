@@ -1,11 +1,12 @@
-#!/usr/bin/env node
-
 import { execSync } from 'child_process'
 import inquirer from 'inquirer'
 import frp from './frp'
+import { checkVersion } from './utils/checkVersion'
 import meta from './utils/meta'
 
-(async function () {
+export default async function () {
+  checkVersion()
+
   const choose = await inquirer.prompt([
     {
       type: 'rawlist',
@@ -50,5 +51,5 @@ import meta from './utils/meta'
     ])
     frp(port)
   }
-})()
+}
 
