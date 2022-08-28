@@ -20,22 +20,22 @@ custom_domains = frp.laihaojie.com
 `;
     const frpc_ini_path = path_1.default.join(__dirname, '../../frp_packages/frpc.ini');
     fs_1.default.writeFileSync(frpc_ini_path, frpc_ini_template.replace(/\$port/, port));
-    var osValue = process.platform;
-    console.log(chalk_1.default.blue(`打开 http://frp.laihaojie.com  预览`));
-    if (osValue == 'darwin') {
-        console.log("Mac OS");
+    const osValue = process.platform;
+    console.log(chalk_1.default.blue('打开 http://frp.laihaojie.com  预览'));
+    if (osValue === 'darwin') {
+        console.log('Mac OS');
     }
-    else if (osValue == 'win32') {
+    else if (osValue === 'win32') {
         const frpc_win_path = path_1.default.join(__dirname, '../../frp_packages/win/frpc.exe');
         (0, child_process_1.execSync)(`${frpc_win_path} -c ${frpc_ini_path}`, { stdio: 'inherit' });
     }
-    else if (osValue == 'android') {
-        console.log("Android OS");
+    else if (osValue === 'android') {
+        console.log('Android OS');
     }
-    else if (osValue == 'linux') {
-        console.log("Linux OS");
+    else if (osValue === 'linux') {
+        console.log('Linux OS');
     }
     else {
-        console.log("Other os");
+        console.log('Other os');
     }
 };

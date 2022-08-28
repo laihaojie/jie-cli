@@ -12,16 +12,15 @@ import meta from './utils/meta'
       message: '请选择 ?',
       name: 'type',
       choices: [{
-        name: "创建项目",
-        value: "create_project"
+        name: '创建项目',
+        value: 'create_project',
       }, {
-        name: "内网穿透",
-        value: "frp"
+        name: '内网穿透',
+        value: 'frp',
       }],
-    }
+    },
   ])
   if (choose.type === 'create_project') {
-
     const answer = await inquirer.prompt([
       /* Pass your questions in here */
       {
@@ -47,11 +46,9 @@ import meta from './utils/meta'
         type: 'input',
         message: '请输入本地端口号:',
         name: 'port',
-      }
+      },
     ])
     frp(port)
   }
-
 })()
-
 

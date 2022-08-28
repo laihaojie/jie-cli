@@ -3,9 +3,7 @@ import path from 'path'
 import { execSync } from 'child_process'
 import chalk from 'chalk'
 
-
 export default (port) => {
-
   const frpc_ini_template = `
 [common]
 server_addr = 47.101.45.132
@@ -19,26 +17,25 @@ custom_domains = frp.laihaojie.com
   const frpc_ini_path = path.join(__dirname, '../../frp_packages/frpc.ini')
 
   fs.writeFileSync(frpc_ini_path, frpc_ini_template.replace(/\$port/, port))
-  var osValue = process.platform;
+  const osValue = process.platform
 
-  console.log(chalk.blue(`打开 http://frp.laihaojie.com  预览`))
+  console.log(chalk.blue('打开 http://frp.laihaojie.com  预览'))
 
-  if (osValue == 'darwin') {
-    console.log("Mac OS");
-  } else if (osValue == 'win32') {
-
+  if (osValue === 'darwin') {
+    console.log('Mac OS')
+  }
+  else if (osValue === 'win32') {
     const frpc_win_path = path.join(__dirname, '../../frp_packages/win/frpc.exe')
 
     execSync(`${frpc_win_path} -c ${frpc_ini_path}`, { stdio: 'inherit' })
-
-  } else if (osValue == 'android') {
-    console.log("Android OS")
-  } else if (osValue == 'linux') {
-    console.log("Linux OS")
+  }
+  else if (osValue === 'android') {
+    console.log('Android OS')
+  }
+  else if (osValue === 'linux') {
+    console.log('Linux OS')
   }
   else {
-    console.log("Other os")
+    console.log('Other os')
   }
-
-
 }

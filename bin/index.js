@@ -15,13 +15,13 @@ const meta_1 = __importDefault(require("./utils/meta"));
             message: '请选择 ?',
             name: 'type',
             choices: [{
-                    name: "创建项目",
-                    value: "create_project"
+                    name: '创建项目',
+                    value: 'create_project',
                 }, {
-                    name: "内网穿透",
-                    value: "frp"
+                    name: '内网穿透',
+                    value: 'frp',
                 }],
-        }
+        },
     ]);
     if (choose.type === 'create_project') {
         const answer = await inquirer_1.default.prompt([
@@ -45,7 +45,7 @@ const meta_1 = __importDefault(require("./utils/meta"));
                 type: 'input',
                 message: '请输入本地端口号:',
                 name: 'port',
-            }
+            },
         ]);
         (0, frp_1.default)(port);
     }
