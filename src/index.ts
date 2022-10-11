@@ -1,6 +1,7 @@
 import { execSync } from 'child_process'
 import inquirer from 'inquirer'
 import frp from './frp'
+import formatToUTF8 from './formatToUTF8'
 import { checkVersion } from './utils/checkVersion'
 import meta from './utils/meta'
 
@@ -12,13 +13,11 @@ export default async function () {
       type: 'rawlist',
       message: '请选择 ?',
       name: 'type',
-      choices: [{
-        name: '创建项目',
-        value: 'create_project',
-      }, {
-        name: '内网穿透',
-        value: 'frp',
-      }],
+      choices: [
+        { name: '创建项目', value: 'create_project' },
+        { name: '内网穿透', value: 'frp' },
+        { name: '转换文件格式为UTF-8', value: 'utf8' },
+      ],
     },
   ])
   if (choose.type === 'create_project') {
@@ -50,6 +49,17 @@ export default async function () {
       },
     ])
     frp(port)
+  }
+
+  if (choose.type === 'utf8') {
+    const { file_type, ignore_dir } = await inquirer.prompt([
+      { type: 'input', message: '输入转码的文件后缀名，多个用逗号隔开 (回车跳过):', name: 'file_type' },
+      { type: 'input', message: '输入忽略的文件夹，多个用逗号隔开 (回车跳过):', name: 'ignore_dir' },
+    ])
+    console.log(file_type)
+    const file_type_arr = file_type.split(',')
+    const ignore_dir_arr = ignore_dir.split(',')
+    formatToUTF8(file_type_arr, ignore_dir_arr)
   }
 }
 

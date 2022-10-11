@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = require("child_process");
 const inquirer_1 = __importDefault(require("inquirer"));
 const frp_1 = __importDefault(require("./frp"));
+const formatToUTF8_1 = __importDefault(require("./formatToUTF8"));
 const checkVersion_1 = require("./utils/checkVersion");
 const meta_1 = __importDefault(require("./utils/meta"));
 async function default_1() {
@@ -15,13 +16,11 @@ async function default_1() {
             type: 'rawlist',
             message: '请选择 ?',
             name: 'type',
-            choices: [{
-                    name: '创建项目',
-                    value: 'create_project',
-                }, {
-                    name: '内网穿透',
-                    value: 'frp',
-                }],
+            choices: [
+                { name: '创建项目', value: 'create_project' },
+                { name: '内网穿透', value: 'frp' },
+                { name: '转换文件格式为UTF-8', value: 'utf8' },
+            ],
         },
     ]);
     if (choose.type === 'create_project') {
@@ -49,6 +48,16 @@ async function default_1() {
             },
         ]);
         (0, frp_1.default)(port);
+    }
+    if (choose.type === 'utf8') {
+        const { file_type, ignore_dir } = await inquirer_1.default.prompt([
+            { type: 'input', message: '输入转码的文件后缀名，多个用逗号隔开 (回车跳过):', name: 'file_type' },
+            { type: 'input', message: '输入忽略的文件夹，多个用逗号隔开 (回车跳过):', name: 'ignore_dir' },
+        ]);
+        console.log(file_type);
+        const file_type_arr = file_type.split(',');
+        const ignore_dir_arr = ignore_dir.split(',');
+        (0, formatToUTF8_1.default)(file_type_arr, ignore_dir_arr);
     }
 }
 exports.default = default_1;
