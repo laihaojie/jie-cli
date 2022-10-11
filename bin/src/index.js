@@ -54,7 +54,6 @@ async function default_1() {
             { type: 'input', message: '输入转码的文件后缀名，多个用逗号隔开 (回车跳过):', name: 'file_type' },
             { type: 'input', message: '输入忽略的文件夹，多个用逗号隔开 (回车跳过):', name: 'ignore_dir' },
         ]);
-        console.log(file_type);
         const file_type_arr = file_type.split(',');
         const ignore_dir_arr = ignore_dir.split(',');
         (0, formatToUTF8_1.default)(file_type_arr, ignore_dir_arr);
