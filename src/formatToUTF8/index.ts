@@ -34,8 +34,7 @@ export default (file_type_arr, ignore_dir_arr) => {
         if (file_type.includes(ext)) {
           const data = fs.readFileSync(filePath, { encoding: 'binary' })
           const result = jschardet.detect(data)
-
-          if (result.encoding !== to_code && result.encoding !== 'ascii') {
+          if (result.encoding !== 'ascii') {
             console.log(result, filePath)
             count++
             // @ts-expect-error xxxx
