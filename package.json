@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@djie/eslint-config": "^1.0.16",
+    "bumpp": "^8.2.1",
     "eslint": "^8.23.1",
     "typescript": "^4.8.3"
   }
