@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -21,20 +21,20 @@
   },
   "files": [
     "bin",
-    "package.json"
+    "frp_packages"
   ],
   "scripts": {
     "dev": "tsc && node ./bin/index.js",
     "build": "tsc",
-    "release": "npx bumpp && npm publish --access public --registry https://registry.npmjs.org",
+    "release": "tsc && bumpp && npm publish --access public --registry https://registry.npmjs.org",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
   },
   "dependencies": {
-    "chalk": "5.1.2",
+    "chalk": "^4.1.2",
     "degit": "^2.8.4",
     "fs-extra": "^10.1.0",
-    "inquirer": "9.1.3",
+    "inquirer": "8.2.4",
     "jschardet": "^3.0.0",
     "single-line-log": "^1.1.2"
   },
