@@ -13,8 +13,8 @@ server_port = 7000
 type = http
 local_port = $port
 custom_domains = frp.laihaojie.com
-`
-  const frpc_ini_path = path.join(__dirname, '../../frp_packages/frpc.ini')
+`.trim()
+  const frpc_ini_path = path.join(__dirname, '../../../frp_packages/frpc.ini')
 
   fs.writeFileSync(frpc_ini_path, frpc_ini_template.replace(/\$port/, port))
   const osValue = process.platform
@@ -25,7 +25,7 @@ custom_domains = frp.laihaojie.com
     console.log('Mac OS')
   }
   else if (osValue === 'win32') {
-    const frpc_win_path = path.join(__dirname, '../../frp_packages/win/frpc.exe')
+    const frpc_win_path = path.join(__dirname, '../../../frp_packages/win/frpc.exe')
 
     execSync(`${frpc_win_path} -c ${frpc_ini_path}`, { stdio: 'inherit' })
   }

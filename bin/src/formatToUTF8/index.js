@@ -29,15 +29,10 @@ exports.default = (file_type_arr, ignore_dir_arr) => {
                 if (file_type.includes(ext)) {
                     const data = fs_extra_1.default.readFileSync(filePath, { encoding: 'binary' });
                     const result = jschardet_1.default.detect(data);
-                    console.log(result, filePath);
                     if (result.encoding !== 'ascii') {
+                        console.log(result, filePath);
                         count++;
                         const newData = iconv_lite_1.default.decode(data, result.encoding);
-                        fs_extra_1.default.writeFileSync(filePath, iconv_lite_1.default.encode(newData, to_code));
-                    }
-                    else {
-                        fs_extra_1.default.unlinkSync(filePath);
-                        const newData = iconv_lite_1.default.decode(data, 'utf8');
                         fs_extra_1.default.writeFileSync(filePath, iconv_lite_1.default.encode(newData, to_code));
                     }
                 }

@@ -17,8 +17,8 @@ server_port = 7000
 type = http
 local_port = $port
 custom_domains = frp.laihaojie.com
-`;
-    const frpc_ini_path = path_1.default.join(__dirname, '../../frp_packages/frpc.ini');
+`.trim();
+    const frpc_ini_path = path_1.default.join(__dirname, '../../../frp_packages/frpc.ini');
     fs_1.default.writeFileSync(frpc_ini_path, frpc_ini_template.replace(/\$port/, port));
     const osValue = process.platform;
     console.log(chalk_1.default.blue('打开 http://frp.laihaojie.com  预览'));
@@ -26,7 +26,7 @@ custom_domains = frp.laihaojie.com
         console.log('Mac OS');
     }
     else if (osValue === 'win32') {
-        const frpc_win_path = path_1.default.join(__dirname, '../../frp_packages/win/frpc.exe');
+        const frpc_win_path = path_1.default.join(__dirname, '../../../frp_packages/win/frpc.exe');
         (0, child_process_1.execSync)(`${frpc_win_path} -c ${frpc_ini_path}`, { stdio: 'inherit' });
     }
     else if (osValue === 'android') {
