@@ -5,6 +5,7 @@ import { update } from './update'
 import { createProject } from './create'
 import { frp } from './frp'
 import { formatToUTF8 } from './formatToUTF8'
+import { gitPush } from './git'
 
 const program = new Command()
 
@@ -15,18 +16,21 @@ export default async function () {
     .action(() => {
       createProject()
     })
+
   program
     .command('frp')
     .description('开启内网穿透')
     .action(() => {
       frp()
     })
+
   program
     .command('utf8')
     .description('格式化文件编码为 utf8')
     .action(() => {
       formatToUTF8()
     })
+
   program
     .command('update')
     .description('更新脚手架')
@@ -34,10 +38,10 @@ export default async function () {
       update()
     })
 
-  program.command('dir')
-    .description('显示json配置文件')
+  program.command('push')
+    .description('提交代码')
     .action(() => {
-      console.dir(111)
+      gitPush(program.args.join(' '))
     })
 
   program.version(version, '-v, --version', '查看版本号')
