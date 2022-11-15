@@ -6,6 +6,8 @@ import { createProject } from './create'
 import { frp } from './frp'
 import { formatToUTF8 } from './formatToUTF8'
 import { gitPush } from './git'
+import { Platform } from './utils/platform'
+import { runCmd } from './utils/run'
 
 const program = new Command()
 
@@ -42,6 +44,16 @@ export default async function () {
     .description('提交代码')
     .action(() => {
       gitPush(program.args.slice(1).join(' '))
+    })
+
+  program
+    .command('.')
+    .description('打开当前文件夹')
+    .action(() => {
+      if (Platform.isWin)
+        runCmd('explorer .')
+      else
+        runCmd('open .')
     })
 
   program.version(version, '-v, --version', '查看版本号')
