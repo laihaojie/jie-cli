@@ -41,7 +41,7 @@ export default async function () {
   program.command('push')
     .description('提交代码')
     .action(() => {
-      gitPush(program.args.join(' '))
+      gitPush(program.args.slice(1).join(' '))
     })
 
   program.version(version, '-v, --version', '查看版本号')
