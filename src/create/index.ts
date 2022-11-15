@@ -1,6 +1,6 @@
 import { execSync } from 'child_process'
 import inquirer from 'inquirer'
-import meta from 'src/utils/meta'
+import meta from '../utils/meta'
 
 export async function createProject() {
   const answer = await inquirer.prompt([
