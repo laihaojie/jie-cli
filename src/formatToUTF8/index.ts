@@ -44,8 +44,7 @@ export async function formatToUTF8() {
           if (result.encoding !== 'ascii') {
             console.log(result, filePath)
             count++
-            // @ts-expect-error xxxx
-            const newData = iconv.decode(data, result.encoding)
+            const newData = iconv.decode(data as unknown as Buffer, result.encoding)
             fs.writeFileSync(filePath, iconv.encode(newData, to_code))
           }
         }
