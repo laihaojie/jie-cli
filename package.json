@@ -17,16 +17,17 @@
     "cli"
   ],
   "bin": {
-    "jie": "./bin/index.js"
+    "jie": "bin/jie.js"
   },
   "files": [
     "bin",
+    "dist",
     "frp_packages"
   ],
   "scripts": {
-    "dev": "tsc && node ./bin/index.js",
+    "dev": "tsc && node ./bin/jie.js",
     "build": "tsc",
-    "release": "tsc && bumpp && npm publish --access public --registry https://registry.npmjs.org",
+    "release": "tsc && bumpp --commit --push --all --tag && npm publish --access public --registry https://registry.npmjs.org",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
   },
@@ -35,6 +36,7 @@
     "degit": "^2.8.4",
     "fs-extra": "^10.1.0",
     "inquirer": "8.2.4",
+    "commander": "^9.4.1",
     "jschardet": "^3.0.0",
     "single-line-log": "^1.1.2"
   },

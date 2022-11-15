@@ -4,12 +4,19 @@ import fs from 'fs-extra'
 import jschardet from 'jschardet'
 import iconv from 'iconv-lite'
 import chalk from 'chalk'
+import inquirer from 'inquirer'
 
-export default (file_type_arr, ignore_dir_arr) => {
+export async function formatToUTF8() {
+  const { file_type, ignore_dir } = await inquirer.prompt([
+    { type: 'input', message: '输入转码的文件后缀名，多个用逗号隔开 (回车跳过):', name: 'file_type' },
+    { type: 'input', message: '输入忽略的文件夹，多个用逗号隔开 (回车跳过):', name: 'ignore_dir' },
+  ])
+  const file_type_arr = file_type.split(',')
+  const ignore_dir_arr = ignore_dir.split(',')
   const root_path = process.cwd()
   // 需要转码的文件格式
   // 去重
-  const file_type = Array.from(new Set(['html', 'js', 'css', 'json', 'md', 'txt', 'vue', 'ts', 'tsx', 'jsx', ...file_type_arr]))
+  const transform_file_type = Array.from(new Set(['html', 'js', 'css', 'json', 'md', 'txt', 'vue', 'ts', 'tsx', 'jsx', ...file_type_arr]))
   // 文件的目标编码
   const to_code = 'UTF-8'
   // 忽略的文件夹
@@ -31,7 +38,7 @@ export default (file_type_arr, ignore_dir_arr) => {
       }
       else {
         const ext = path.extname(filePath).slice(1)
-        if (file_type.includes(ext)) {
+        if (transform_file_type.includes(ext)) {
           const data = fs.readFileSync(filePath, { encoding: 'binary' })
           const result = jschardet.detect(data)
           if (result.encoding !== 'ascii') {
@@ -49,7 +56,7 @@ export default (file_type_arr, ignore_dir_arr) => {
   console.log(chalk.green('开始转码...', root_path))
   readDir(root_path)
   console.log(chalk.green(`转码完成，共转码${count}个文件`))
-  console.log(chalk.yellow('转换的文件格式:', file_type.join(' ')))
+  console.log(chalk.yellow('转换的文件格式:', transform_file_type.join(' ')))
   console.log(chalk.yellow('忽略的文件夹:', ignore.join(' ')))
 }
 

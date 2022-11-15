@@ -2,8 +2,17 @@ import fs from 'fs'
 import path from 'path'
 import { execSync } from 'child_process'
 import chalk from 'chalk'
+import inquirer from 'inquirer'
 
-export default (port) => {
+export async function frp() {
+  // 开启内网穿透
+  const { port } = await inquirer.prompt([
+    {
+      type: 'input',
+      message: '请输入本地端口号:',
+      name: 'port',
+    },
+  ])
   const frpc_ini_template = `
 [common]
 server_addr = 47.101.45.132

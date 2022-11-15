@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "target": "es2017",
     "sourceMap": false,
-    "outDir": "./bin",
+    "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -20,7 +20,7 @@
     "noFallthroughCasesInSwitch": false
   },
   "include": [
-    "src/**/*.ts",
+    "src",
     "index.ts"
   ]
 }
