@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "packageManager": "pnpm@7.14.0",
   "description": "my cli tool",
   "author": "laihaojie",
