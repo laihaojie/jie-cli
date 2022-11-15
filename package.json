@@ -27,7 +27,7 @@
   "scripts": {
     "dev": "tsc && node ./bin/jie.js",
     "build": "tsc",
-    "release": "tsc && bumpp --commit --push --all --tag && npm publish --access public --registry https://registry.npmjs.org",
+    "release": "bumpp --commit --push --all --tag",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
   },
