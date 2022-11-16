@@ -5,7 +5,7 @@ import { update } from './update'
 import { createProject } from './create'
 import { frp } from './frp'
 import { formatToUTF8 } from './formatToUTF8'
-import { gitPush } from './git'
+import { gitPush, openGitRepoByBrowser } from './git'
 import { Platform } from './utils/platform'
 import { runCmd } from './utils/run'
 
@@ -54,6 +54,13 @@ export default async function () {
         runCmd('explorer .')
       else
         runCmd('open .')
+    })
+
+  program
+    .command('repo')
+    .description('打开当前git仓库')
+    .action(() => {
+      openGitRepoByBrowser()
     })
 
   program.version(version, '-v, --version', '查看版本号')

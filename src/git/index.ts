@@ -1,5 +1,6 @@
 import { execSync } from 'child_process'
 import chalk from 'chalk'
+import { openInBrowser } from '../utils/open'
 
 export async function gitPush(message) {
   const res = execSync('git status', { stdio: 'pipe' }).toString().trim()
@@ -32,4 +33,11 @@ export async function gitPush(message) {
   catch (err) {
     console.log(`${chalk.bold.red('运行出错')}`)
   }
+}
+
+export function openGitRepoByBrowser() {
+  const res = execSync('git remote -v', { stdio: 'pipe' }).toString().trim()
+  const url = res.match(/origin\s+(.*)\s+\(fetch\)/)[1]
+  if (url)
+    openInBrowser(url)
 }
