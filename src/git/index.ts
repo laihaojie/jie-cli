@@ -26,6 +26,8 @@ export function openGitRepoByBrowser() {
 }
 
 export async function checkGitStats() {
+  runCmd('git config core.hooksPath .gitHooks')
+
   runCmd('git fetch')
 
   const res = execSync('git status', { stdio: 'pipe' }).toString().trim()
@@ -38,14 +40,18 @@ export async function checkGitStats() {
 
   if (isPull[0] && pullCountNum > 0) {
     console.log(`当前分支 ${chalk.bold.yellow(currentBranch)} 距离远程分支 ${chalk.bold.yellow(currentBranch)} 有 ${chalk.bold.yellow(pullCountNum)} 个拉取, 请先执行 ${chalk.bold.yellow('git pull')}`)
-    return
+    return true
   }
 
-  if (isPush[0] && pushCountNum > 0)
+  if (isPush[0] && pushCountNum > 0) {
     console.log(`当前分支 ${chalk.bold.yellow(currentBranch)} 距离远程分支 ${chalk.bold.yellow(currentBranch)} 有 ${chalk.bold.yellow(pushCountNum)} 个提交, 请先执行 ${chalk.bold.yellow('git push')}`)
+    return true
+  }
+
+  return false
 }
 
 export function gitPushAll(message) {
-  checkGitStats()
+  if (checkGitStats()) return
   gitPush(message)
 }
