@@ -1,11 +1,11 @@
 import { Command } from 'commander'
 import { version } from '../package.json'
-import { checkVersion } from './utils/checkVersion'
-import { update } from './update'
 import { createProject } from './create'
-import { frp } from './frp'
 import { formatToUTF8 } from './formatToUTF8'
-import { gitPush, openGitRepoByBrowser } from './git'
+import { frp } from './frp'
+import { gitPushAll, openGitRepoByBrowser } from './git'
+import { update } from './update'
+import { checkVersion } from './utils/checkVersion'
 import { Platform } from './utils/platform'
 import { runCmd } from './utils/run'
 
@@ -43,7 +43,7 @@ export default async function () {
   program.command('push')
     .description('提交代码')
     .action(() => {
-      gitPush(program.args.slice(1).join(' '))
+      gitPushAll(program.args.slice(1).join(' '))
     })
 
   program
