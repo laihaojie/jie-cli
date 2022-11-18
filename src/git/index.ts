@@ -25,7 +25,7 @@ export function openGitRepoByBrowser() {
     openInBrowser(url)
 }
 
-export async function checkGitStats() {
+export function checkGitStats() {
   runCmd('git config core.hooksPath .gitHooks')
 
   runCmd('git fetch')
