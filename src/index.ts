@@ -6,6 +6,7 @@ import { frp } from './frp'
 import { gitPushAll, openGitRepoByBrowser } from './git'
 import { update } from './update'
 import { checkVersion } from './utils/checkVersion'
+import { openInBrowser } from './utils/open'
 import { Platform } from './utils/platform'
 import { runCmd } from './utils/run'
 
@@ -61,6 +62,13 @@ export default async function () {
     .description('打开当前git仓库')
     .action(() => {
       openGitRepoByBrowser()
+    })
+
+  program
+    .command('doc')
+    .description('打开阿杰的文档')
+    .action(() => {
+      openInBrowser('https://docs.laihaojie.com/')
     })
 
   program.version(version, '-v, --version', '查看版本号')
