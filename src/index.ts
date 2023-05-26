@@ -9,6 +9,7 @@ import { checkVersion } from './utils/checkVersion'
 import { openInBrowser } from './utils/open'
 import { Platform } from './utils/platform'
 import { runCmd } from './utils/run'
+import { clean } from './clean'
 
 const program = new Command()
 
@@ -69,6 +70,13 @@ export default async function () {
     .description('打开阿杰的文档')
     .action(() => {
       openInBrowser('https://docs.laihaojie.com/')
+    })
+
+  program
+    .command('clean')
+    .description('清除文件')
+    .action(() => {
+      clean(program.args.slice(1))
     })
 
   program.version(version, '-v, --version', '查看版本号')
