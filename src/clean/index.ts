@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { rimrafSync } from 'rimraf'
+import { rimraf } from 'rimraf'
 import chalk from 'chalk'
 import ora from 'ora'
 
@@ -23,12 +23,24 @@ export function clean(args: string[]) {
 }
 
 function cleanByPath(...args: string[]) {
-  args.forEach((clean) => {
-    // 判断是否存在
-    if (!fs.existsSync(clean)) return
+  const spinner = ora()
 
-    const spinner = ora({ text: chalk(`清除 ${chalk.bold(clean)}`) }).start()
-    rimrafSync(clean)
-    spinner.succeed(chalk.green(`清除 ${chalk.bold(clean)}`))
-  })
+  next(args[Symbol.iterator]())
+
+  async function next(iterator) {
+    const result = iterator.next()
+
+    if (result.done) return
+
+    const value = result.value
+
+    if (!fs.existsSync(value)) return
+
+    spinner.start(chalk(`清除 ${chalk.bold(value)}`))
+    await rimraf(value)
+    spinner.succeed(chalk.green(`清除 ${chalk.bold(value)}`))
+    next(iterator)
+  }
 }
+
+
