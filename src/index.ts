@@ -10,6 +10,7 @@ import { openInBrowser } from './utils/open'
 import { Platform } from './utils/platform'
 import { runCmd } from './utils/run'
 import { clean } from './clean'
+import { random } from './random'
 
 const program = new Command()
 
@@ -77,6 +78,13 @@ export default async function () {
     .description('清除文件')
     .action(() => {
       clean(program.args.slice(1))
+    })
+
+  program
+    .command('random')
+    .description('生成随机字符串或数字')
+    .action(() => {
+      random(program.args.slice(1))
     })
 
   program.version(version, '-v, --version', '查看版本号')
