@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { Command } from 'commander'
 import { version } from '../package.json'
 import { createProject } from './create'
@@ -76,7 +77,13 @@ export default async function () {
   program
     .command('clean')
     .description('清除文件')
-    .action(() => {
+    .option('-a, --all', '清除所有')
+    .action((ops) => {
+      if (ops.all) {
+        const files = fs.readdirSync(process.cwd())
+        clean(files)
+        return
+      }
       clean(program.args.slice(1))
     })
 
