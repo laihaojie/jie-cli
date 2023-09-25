@@ -1,6 +1,7 @@
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
+import path from 'node:path'
 import inquirer from 'inquirer'
-import meta from '../utils/meta'
+import createMeta from './meta'
 
 export async function createProject() {
   const answer = await inquirer.prompt([
@@ -9,7 +10,7 @@ export async function createProject() {
       type: 'rawlist',
       message: '你需要什么项目 ?',
       name: 'project',
-      choices: Object.keys(meta).map(key => ({ name: key })),
+      choices: Object.keys(createMeta).map(key => ({ name: key })),
     },
     {
       type: 'input',
@@ -18,5 +19,20 @@ export async function createProject() {
     },
   ])
 
-  execSync(`${meta[answer.project]} ${answer.name === '.' ? '--force' : answer.name} `, { stdio: 'inherit' })
+  const key = answer.project as keyof typeof createMeta
+  const name = answer.name
+
+  const effectOptions = {}
+  if (createMeta[key].prompt) {
+    const customAnswer = await inquirer.prompt(createMeta[key].prompt)
+
+    Object.assign(effectOptions, customAnswer, { workDir: name === '.' ? process.cwd() : path.resolve(process.cwd(), name) })
+  }
+
+  execSync(`npx degit ${createMeta[key].templateUrl} ${name === '.' ? '--force' : name}`, { stdio: 'inherit' })
+
+  const effect = createMeta[key].effect
+
+  if (effect)
+    effect(effectOptions)
 }
