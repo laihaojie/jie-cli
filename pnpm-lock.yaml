@@ -20,15 +20,9 @@ dependencies:
   fs-extra:
     specifier: ^10.1.0
     version: 10.1.0
-  iconv-lite:
-    specifier: ^0.6.3
-    version: 0.6.3
   inquirer:
     specifier: 8.2.4
     version: 8.2.4
-  jschardet:
-    specifier: ^3.0.0
-    version: 3.0.0
   ora:
     specifier: ^5.4.1
     version: 5.4.1
@@ -1700,13 +1694,6 @@ packages:
       safer-buffer: 2.1.2
     dev: false
 
-  /iconv-lite@0.6.3:
-    resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      safer-buffer: 2.1.2
-    dev: false
-
   /ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
     dev: false
@@ -1984,11 +1971,6 @@ packages:
     dependencies:
       argparse: 2.0.1
     dev: true
-
-  /jschardet@3.0.0:
-    resolution: {integrity: sha512-lJH6tJ77V8Nzd5QWRkFYCLc13a3vADkh3r/Fi8HupZGWk2OVVDfnZP8V/VgQgZ+lzW0kG2UGb5hFgt3V3ndotQ==}
-    engines: {node: '>=0.1.90'}
-    dev: false
 
   /json-parse-even-better-errors@2.3.1:
     resolution: {integrity: sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==}

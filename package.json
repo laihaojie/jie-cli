@@ -38,9 +38,7 @@
     "commander": "^9.4.1",
     "degit": "^2.8.4",
     "fs-extra": "^10.1.0",
-    "iconv-lite": "^0.6.3",
     "inquirer": "8.2.4",
-    "jschardet": "^3.0.0",
     "ora": "^5.4.1",
     "rimraf": "^5.0.1",
     "single-line-log": "^1.1.2"

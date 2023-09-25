@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import { Command } from 'commander'
 import { version } from '../package.json'
 import { createProject } from './create'
-import { formatToUTF8 } from './formatToUTF8'
 import { frp } from './frp'
 import { gitPushAll, openGitRepoByBrowser } from './git'
 import { update } from './update'
@@ -28,13 +27,6 @@ export default async function () {
     .description('开启内网穿透')
     .action(() => {
       frp()
-    })
-
-  program
-    .command('utf8')
-    .description('格式化文件编码为 utf8')
-    .action(() => {
-      formatToUTF8()
     })
 
   program
