@@ -22,8 +22,7 @@
   },
   "files": [
     "bin",
-    "dist",
-    "frp_packages"
+    "dist"
   ],
   "scripts": {
     "dev": "tsc && node ./bin/jie.js",

@@ -1,16 +1,15 @@
 import fs from 'node:fs'
 import { Command } from 'commander'
 import { version } from '../package.json'
-import { createProject } from './create'
-import { frp } from './frp'
-import { gitPushAll, openGitRepoByBrowser } from './git'
-import { update } from './update'
 import { checkVersion } from './utils/checkVersion'
 import { openInBrowser } from './utils/open'
 import { Platform } from './utils/platform'
 import { runCmd } from './utils/run'
-import { clean } from './clean'
-import { random } from './random'
+import { clean } from './commands/clean'
+import { gitPushAll, openGitRepoByBrowser } from './commands/git'
+import { random } from './commands/random'
+import { update } from './commands/update'
+import { createProject } from './commands/create'
 
 const program = new Command()
 
@@ -22,12 +21,12 @@ export default async function () {
       createProject()
     })
 
-  program
-    .command('frp')
-    .description('开启内网穿透')
-    .action(() => {
-      frp()
-    })
+  // program
+  //   .command('frp')
+  //   .description('开启内网穿透')
+  //   .action(() => {
+  //     frp()
+  //   })
 
   program
     .command('update')
