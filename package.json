@@ -43,10 +43,10 @@
     "single-line-log": "^1.1.2"
   },
   "devDependencies": {
-    "@djie/eslint-config": "^1.0.16",
+    "@djie/eslint-config": "1.0.0-beta.27",
     "@types/node": "^18.11.0",
     "bumpp": "^8.2.1",
-    "eslint": "8.25.0",
+    "eslint": "8.51.0",
     "typescript": "4.8.4"
   }
 }

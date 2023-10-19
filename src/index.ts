@@ -10,6 +10,7 @@ import { gitPushAll, openGitRepoByBrowser } from './commands/git'
 import { random } from './commands/random'
 import { update } from './commands/update'
 import { createProject } from './commands/create'
+import { eslint } from './commands/eslint'
 
 const program = new Command()
 
@@ -83,6 +84,13 @@ export default async function () {
     .description('生成随机字符串或数字')
     .action(() => {
       random(program.args.slice(1))
+    })
+
+  program
+    .command('eslint')
+    .description('创建eslint配置文件')
+    .action(() => {
+      eslint()
     })
 
   program.version(version, '-v, --version', '查看版本号')
