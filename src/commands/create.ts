@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process'
 import path from 'node:path'
+import process from 'node:process'
 import inquirer from 'inquirer'
 
 export const createMeta: CreateMeta = {
@@ -30,7 +31,6 @@ export const createMeta: CreateMeta = {
     templateUrl: 'Deluze/electron-vue-template',
   },
 }
-
 
 export async function createProject() {
   const answer = await inquirer.prompt([

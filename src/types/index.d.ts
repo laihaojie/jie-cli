@@ -4,7 +4,6 @@ interface Config {
   initConfig: Record<string, string>
 }
 
-
 interface CreateMeta {
   [key: string]: {
     templateUrl: string
@@ -22,4 +21,3 @@ interface ReplacePackageNameOptions {
   packageName: string
   workDir?: string
 }
-

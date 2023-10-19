@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { runCmd } from './run'
 
 export function openInBrowser(url) {

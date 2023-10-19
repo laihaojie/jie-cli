@@ -4,7 +4,8 @@ import chalk from 'chalk'
 import ora from 'ora'
 
 export function clean(args: string[]): any {
-  if (args.length) return cleanByPath(...args)
+  if (args.length)
+    return cleanByPath(...args)
 
   const cleans = [
     'node_modules',
@@ -46,11 +47,11 @@ async function cleanByPath(...args: string[]) {
   const spinner = ora()
 
   for (const value of args) {
-    if (!fs.existsSync(value)) continue
+    if (!fs.existsSync(value))
+      continue
 
     spinner.start(chalk(`清除 ${chalk.bold(value)}`))
     await rimraf(value)
     spinner.succeed(chalk.green(`清除 ${chalk.bold(value)}`))
   }
 }
-

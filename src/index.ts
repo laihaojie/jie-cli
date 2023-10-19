@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import process from 'node:process'
 import { Command } from 'commander'
 import { version } from '../package.json'
 import { checkVersion } from './utils/checkVersion'
@@ -97,4 +98,3 @@ export default async function () {
   program.parse()
   checkVersion()
 }
-
