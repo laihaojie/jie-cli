@@ -28,7 +28,7 @@ export const createMeta: CreateMeta = {
     templateUrl: 'laihaojie/starter-html#main',
   },
   Electron: {
-    templateUrl: 'Deluze/electron-vue-template',
+    templateUrl: 'laihaojie/starter-electron#main',
   },
 }
 
