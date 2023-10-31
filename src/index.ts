@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import process from 'node:process'
 import { Command } from 'commander'
+import chalk from 'chalk'
 import { version } from '../package.json'
 import { checkVersion } from './utils/checkVersion'
 import { openInBrowser } from './utils/open'
@@ -98,3 +99,8 @@ export default async function () {
   program.parse()
   checkVersion()
 }
+
+// 捕获全局异常
+process.on('uncaughtException', (err) => {
+  console.log(chalk.red('异常信息：', err.message))
+})
