@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "packageManager": "pnpm@7.14.0",
   "description": "my cli tool",
   "author": "laihaojie",
@@ -46,7 +46,7 @@
     "@djie/eslint-config": "1.0.0-beta.27",
     "@types/node": "^18.11.0",
     "bumpp": "^8.2.1",
-    "eslint": "8.51.0",
+    "eslint": "8.52.0",
     "typescript": "4.8.4"
   }
 }
