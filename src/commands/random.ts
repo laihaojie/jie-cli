@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import process from 'node:process'
 import chalk from 'chalk'
 import { copyToClipboard } from '../utils/copy'
 
@@ -10,7 +11,6 @@ type RandomType = 'int' | 'str' | 'uuid' | string
  * 如果第一个参数为uuid，则生成uuid
  * 如果没有参数，则生成10位随机整数
  * 如果第二个参数为数字，则生成长度为该数字的随机整数或字符串 （取决于第一个参数的类型）
- * @returns void
  */
 export function random([arg1 = '10', arg2]: string[]) {
   if (
@@ -18,7 +18,10 @@ export function random([arg1 = '10', arg2]: string[]) {
     && arg1 !== 'str'
     && arg1 !== 'uuid'
     && !/^\d+$/.test(arg1)
-  ) return console.error(chalk.red('参数错误'))
+  ) {
+    console.error(chalk.red('参数错误'))
+    process.exit(1)
+  }
 
   const typeReg = /int|str|uuid/
 

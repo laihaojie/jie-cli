@@ -12,7 +12,7 @@ export async function eslint() {
   // 判断当前是否有package.json
   if (!fs.existsSync(packageJsonPath)) {
     console.error(chalk.red('当前目录下没有package.json文件，请先执行npm init初始化'))
-    return
+    process.exit(1)
   }
 
   // 判断是否安装了 '@djie/eslint-config'
@@ -23,7 +23,7 @@ export async function eslint() {
   const dependencies = packageJson.dependencies || {}
 
   if (!devDependencies[packageName] && !dependencies[packageName])
-    console.error(chalk.green.bold(`开始安装 eslint ${packageName}`))
+    console.log(chalk.green.bold(`开始安装 eslint ${packageName}`))
 
   let packageManager = ''
 

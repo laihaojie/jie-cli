@@ -3,8 +3,10 @@ import process from 'node:process'
 import chalk from 'chalk'
 
 export async function runCmd(cmd, win = 'powershell') {
-  if (!cmd)
-    return console.error(chalk.bold.red('缺少指令配置'))
+  if (!cmd) {
+    console.error(chalk.bold.red('缺少指令配置'))
+    process.exit(1)
+  }
   const isWin = process.platform === 'win32'
 
   if (isWin) {

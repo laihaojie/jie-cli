@@ -7,7 +7,7 @@ import { runCmd } from '../utils/run'
 export async function gitPush(message) {
   if (!message) {
     console.error(chalk.bold.red('请输入提交信息'))
-    return
+    process.exit(1)
   }
   try {
     execSync('git add .', { stdio: 'inherit' })
@@ -16,6 +16,7 @@ export async function gitPush(message) {
   }
   catch (err) {
     console.error(`${chalk.bold.red('运行出错')}`)
+    process.exit(1)
   }
 }
 
