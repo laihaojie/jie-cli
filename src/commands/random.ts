@@ -18,7 +18,7 @@ export function random([arg1 = '10', arg2]: string[]) {
     && arg1 !== 'str'
     && arg1 !== 'uuid'
     && !/^\d+$/.test(arg1)
-  ) return console.log(chalk.red('参数错误'))
+  ) return console.error(chalk.red('参数错误'))
 
   const typeReg = /int|str|uuid/
 

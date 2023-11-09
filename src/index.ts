@@ -102,5 +102,5 @@ export default async function () {
 
 // 捕获全局异常
 process.on('uncaughtException', (err) => {
-  console.log(chalk.red('异常信息：', err.message))
+  console.error(chalk.red('异常信息：', err.message))
 })
