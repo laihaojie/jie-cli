@@ -18,7 +18,7 @@ export async function eslint() {
   // 判断是否安装了 '@djie/eslint-config'
   const packageName = '@djie/eslint-config'
   // eslint-disable-next-line ts/no-var-requires, ts/no-require-imports
-  const packageJson = require(packageJsonPath)
+  let packageJson = require(packageJsonPath)
   const devDependencies = packageJson.devDependencies || {}
   const dependencies = packageJson.dependencies || {}
 
@@ -97,6 +97,9 @@ module.exports = jie()
   }
 
   fs.writeFileSync(eslintConfigPath, eslintConfig)
+
+  // eslint-disable-next-line ts/no-require-imports
+  packageJson = require(packageJsonPath)
 
   // 给package.json 添加 scripts
   packageJson.scripts = packageJson.scripts || {}
