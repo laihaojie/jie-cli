@@ -26,7 +26,8 @@
   ],
   "scripts": {
     "dev": "tsc && node ./bin/jie.js",
-    "build": "tsc",
+    "build:tsc": "tsc",
+    "build": "tsup",
     "release": "bumpp --commit --push --all --tag",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
@@ -47,6 +48,7 @@
     "@types/node": "^18.11.0",
     "bumpp": "^8.2.1",
     "eslint": "8.55.0",
+    "tsup": "^8.0.1",
     "typescript": "4.8.4"
   }
 }
