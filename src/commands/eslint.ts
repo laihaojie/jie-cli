@@ -98,6 +98,8 @@ module.exports = jie()
 
   fs.writeFileSync(eslintConfigPath, eslintConfig)
 
+  // 清除require.cache
+  delete require.cache[require.resolve(packageJsonPath)]
   // eslint-disable-next-line ts/no-require-imports
   packageJson = require(packageJsonPath)
 
