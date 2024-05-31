@@ -13,6 +13,7 @@ import { random } from './commands/random'
 import { update } from './commands/update'
 import { createProject } from './commands/create'
 import { eslint } from './commands/eslint'
+import { killPort } from './commands/kill'
 
 const program = new Command()
 
@@ -93,6 +94,13 @@ export default async function () {
     .description('创建eslint配置文件')
     .action(() => {
       eslint()
+    })
+
+  program
+    .command('kill')
+    .description('杀死端口')
+    .action(() => {
+      killPort(program.args.slice(1))
     })
 
   program.version(version, '-v, --version', '查看版本号')

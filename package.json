@@ -1,7 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.35",
-  "packageManager": "pnpm@7.14.0",
+  "version": "1.0.36",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -48,6 +47,7 @@
     "@types/node": "^18.11.0",
     "bumpp": "^8.2.1",
     "eslint": "8.55.0",
+    "iconv-lite": "^0.6.3",
     "tsup": "^8.0.1",
     "typescript": "4.8.4"
   }
