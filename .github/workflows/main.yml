@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [16.x]
+        node: [20.x]
       fail-fast: false
 
     steps:
