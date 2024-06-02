@@ -17,38 +17,40 @@
     "cli"
   ],
   "bin": {
-    "jie": "bin/jie.js"
+    "jie": "bin/jie.cjs"
   },
   "files": [
     "bin",
     "dist"
   ],
   "scripts": {
-    "dev": "tsc && node ./bin/jie.js",
+    "dev": "esno index.ts",
     "build:tsc": "tsc",
-    "build": "tsup",
+    "build:tsup": "tsup",
+    "build": "unbuild",
     "release": "bumpp --commit --push --all --tag",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
-  },
-  "dependencies": {
-    "chalk": "^4.1.2",
-    "clipboardy": "^2.3.0",
-    "commander": "^9.4.1",
-    "degit": "^2.8.4",
-    "fs-extra": "^10.1.0",
-    "inquirer": "8.2.4",
-    "ora": "^5.4.1",
-    "rimraf": "^5.0.1",
-    "single-line-log": "^1.1.2"
   },
   "devDependencies": {
     "@djie/eslint-config": "2.1.4",
     "@types/node": "^18.11.0",
     "bumpp": "^8.2.1",
+    "chalk": "^4.1.2",
+    "clipboardy": "^2.3.0",
+    "commander": "^9.4.1",
+    "degit": "^2.8.4",
     "eslint": "8.55.0",
+    "esno": "^4.7.0",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^10.1.0",
     "iconv-lite": "^0.6.3",
+    "inquirer": "8.2.4",
+    "ora": "^5.4.1",
+    "rimraf": "^5.0.1",
+    "single-line-log": "^1.1.2",
     "tsup": "^8.0.1",
-    "typescript": "4.8.4"
+    "typescript": "4.8.4",
+    "unbuild": "^2.0.0"
   }
 }
