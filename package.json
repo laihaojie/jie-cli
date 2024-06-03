@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -37,7 +37,6 @@
     "@types/node": "^18.11.0",
     "bumpp": "^8.2.1",
     "chalk": "^4.1.2",
-    "clipboardy": "^4.0.0",
     "commander": "^9.4.1",
     "copy-paste": "^1.5.3",
     "degit": "^2.8.4",

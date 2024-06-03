@@ -1,6 +1,4 @@
-// import clipboardy from 'clipboardy'
 import chalk from 'chalk'
-
 import clipboard from 'copy-paste'
 
 export function copyToClipboard(text: string, isConsole = true) {
