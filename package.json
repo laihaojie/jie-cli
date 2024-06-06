@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -28,7 +28,7 @@
     "build:tsc": "tsc",
     "build:tsup": "tsup",
     "build": "unbuild",
-    "release": "bumpp --commit --push --all --tag",
+    "release": "git add . && bumpp patch -y --commit --push --all --tag",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
   },

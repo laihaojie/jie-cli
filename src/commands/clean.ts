@@ -51,6 +51,11 @@ async function cleanByPath(...args: string[]) {
     if (!fs.existsSync(value))
       continue
 
+    if (value.startsWith('/') || value.startsWith('\\')) {
+      console.log(chalk.red(chalk.bold('禁止清除根目录')))
+      return
+    }
+
     spinner.start(chalk(`清除 ${chalk.bold(value)}`))
     // await rimraf(value)
     runCmd(`rm -rf ${value}`)
