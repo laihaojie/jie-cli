@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import { rimraf } from 'rimraf'
 import chalk from 'chalk'
 import ora from 'ora'
+import { runCmd } from '../utils/run'
 
 export function clean(args: string[]): any {
   if (args.length)
@@ -51,7 +52,8 @@ async function cleanByPath(...args: string[]) {
       continue
 
     spinner.start(chalk(`清除 ${chalk.bold(value)}`))
-    await rimraf(value)
+    // await rimraf(value)
+    runCmd(`rm -rf ${value}`)
     spinner.succeed(chalk.green(`清除 ${chalk.bold(value)}`))
   }
 }
