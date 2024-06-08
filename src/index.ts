@@ -14,6 +14,7 @@ import { update } from './commands/update'
 import { createProject } from './commands/create'
 import { eslint } from './commands/eslint'
 import { killPort } from './commands/kill'
+import { startServer } from './commands/server'
 
 const program = new Command()
 
@@ -31,6 +32,12 @@ export default async function () {
   //   .action(() => {
   //     frp()
   //   })
+  program
+    .command('server')
+    .description('启动bridge服务')
+    .action(() => {
+      startServer()
+    })
 
   program
     .command('update')

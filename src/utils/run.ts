@@ -14,16 +14,15 @@ export function runCmd(cmd) {
 
   try {
     if (isWin) {
-      if (!globalThis.__GIT_BASH) {
+      if (!globalThis.__GIT_BASH)
         globalThis.__GIT_BASH = getGitBashPath()
-      }
 
       if (globalThis.__GIT_BASH)
-        execSync(cmd, { stdio: 'inherit', shell: globalThis.__GIT_BASH })
+        execSync(cmd, { windowsHide: true, stdio: 'inherit', shell: globalThis.__GIT_BASH })
       else
-        execSync(cmd, { stdio: 'inherit' })
+        execSync(cmd, { windowsHide: true, stdio: 'inherit' })
     }
-    else { execSync(cmd, { stdio: 'inherit' }) }
+    else { execSync(cmd, { windowsHide: true, stdio: 'inherit' }) }
   }
   catch (e: any) {
     console.error(chalk.bold.red('指令执行失败:'), e.message)
@@ -41,16 +40,15 @@ export function runCmdGetRes(cmd) {
 
   try {
     if (isWin) {
-      if (!globalThis.__GIT_BASH) {
+      if (!globalThis.__GIT_BASH)
         globalThis.__GIT_BASH = getGitBashPath()
-      }
 
       if (globalThis.__GIT_BASH)
-        res = execSync(cmd, { stdio: 'pipe', shell: globalThis.__GIT_BASH })
+        res = execSync(cmd, { windowsHide: true, stdio: 'pipe', shell: globalThis.__GIT_BASH })
       else
-        res = execSync(cmd, { stdio: 'pipe' })
+        res = execSync(cmd, { windowsHide: true, stdio: 'pipe' })
     }
-    else { res = execSync(cmd, { stdio: 'pipe' }) }
+    else { res = execSync(cmd, { windowsHide: true, stdio: 'pipe' }) }
   }
   catch (e: any) {
     console.error(chalk.bold.red('指令执行失败:'), e.message)

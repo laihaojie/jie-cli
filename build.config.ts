@@ -3,6 +3,7 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   entries: [
     { input: 'index', name: 'jie' },
+    { input: 'bridge', name: 'bridge' },
   ],
   clean: true,
   declaration: true,
@@ -18,7 +19,7 @@ export default defineBuildConfig({
           name: 'replace_string_decoder',
           generateBundle(outputOptions, bundle) {
             for (const [fileName, chunkOrAsset] of Object.entries<any>(bundle)) {
-              if (['jie.mjs', 'jie.cjs'].includes(fileName))
+              if (fileName.endsWith('.cjs') || fileName.endsWith('.mjs') || fileName.endsWith('.js'))
                 chunkOrAsset.code = chunkOrAsset.code.replaceAll('string_decoder/', 'string_decoder')
             }
           },
