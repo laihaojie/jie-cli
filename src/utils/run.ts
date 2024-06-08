@@ -8,7 +8,7 @@ import { getGitBashPath } from './terminal'
 export function runCmd(cmd, shell?: string) {
   if (!cmd) {
     console.error(chalk.bold.red('缺少指令配置'))
-    process.exit(1)
+    return
   }
   const isWin = process.platform === 'win32'
 
@@ -26,14 +26,13 @@ export function runCmd(cmd, shell?: string) {
   }
   catch (e: any) {
     console.error(chalk.bold.red('指令执行失败:'), e.message)
-    process.exit(1)
   }
 }
 
 export function runCmdGetRes(cmd, shell?: string) {
   if (!cmd) {
     console.error(chalk.bold.red('缺少指令配置'))
-    process.exit(1)
+    return ''
   }
   const isWin = process.platform === 'win32'
   let res
@@ -52,7 +51,7 @@ export function runCmdGetRes(cmd, shell?: string) {
   }
   catch (e: any) {
     console.error(chalk.bold.red('指令执行失败:'), e.message)
-    process.exit(1)
+    return ''
   }
 
   return iconv.decode(Buffer.from(res), 'GBK').trim()

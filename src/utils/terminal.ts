@@ -17,9 +17,8 @@ export function getGitBashPath(): string[] {
     gitDirs.add(resolve(gitExeDir, '../..'))
   }
   function addTruthy<T>(set: Set<T>, value: T | undefined): void {
-    if (value) {
+    if (value)
       set.add(value)
-    }
   }
 
   // Add common git install locations
@@ -48,21 +47,20 @@ export function getGitBashPath(): string[] {
     return false
   })
 
-  if (!gitBashPath) {
+  if (!gitBashPath)
     console.log(chalk.yellow('Git Bash 没有找到, 请安装Git确保环境变量中有git.exe'))
-  }
 
   return gitBashPath
 }
 
 function findExecutable(command: string, cwd?: string, paths?: string[], env: any = process.env, exists = promisesExists): string | undefined {
   // If we have an absolute path then we take it.
-  if (path.isAbsolute(command)) {
+  if (path.isAbsolute(command))
     return exists(command) ? command : undefined
-  }
-  if (cwd === undefined) {
+
+  if (cwd === undefined)
     cwd = process.cwd()
-  }
+
   const dir = path.dirname(command)
   if (dir !== '.') {
     // We have a directory and the directory is relative (see above). Make the path absolute
@@ -71,9 +69,9 @@ function findExecutable(command: string, cwd?: string, paths?: string[], env: an
     return exists(fullPath) ? fullPath : undefined
   }
   const envPath = getCaseInsensitive(env, 'PATH')
-  if (paths === undefined && typeof envPath === 'string') {
+  if (paths === undefined && typeof envPath === 'string')
     paths = envPath.split(path.delimiter)
-  }
+
   // No PATH environment. Make path absolute to the cwd.
   if (paths === undefined || paths.length === 0) {
     const fullPath = path.join(cwd, command)
@@ -84,25 +82,23 @@ function findExecutable(command: string, cwd?: string, paths?: string[], env: an
   for (const pathEntry of paths) {
     // The path entry is absolute.
     let fullPath: string
-    if (path.isAbsolute(pathEntry)) {
+    if (path.isAbsolute(pathEntry))
       fullPath = path.join(pathEntry, command)
-    }
-    else {
-      fullPath = path.join(cwd, pathEntry, command)
-    }
 
-    if (exists(fullPath)) {
+    else
+      fullPath = path.join(cwd, pathEntry, command)
+
+    if (exists(fullPath))
       return fullPath
-    }
+
     if (Platform.isWin) {
       let withExtension = `${fullPath}.com`
-      if (exists(withExtension)) {
+      if (exists(withExtension))
         return withExtension
-      }
+
       withExtension = `${fullPath}.exe`
-      if (exists(withExtension)) {
+      if (exists(withExtension))
         return withExtension
-      }
     }
   }
   const fullPath = path.join(cwd, command)
