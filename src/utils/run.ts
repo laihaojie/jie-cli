@@ -51,7 +51,7 @@ export function runCmdGetRes(cmd, shell?: string) {
   }
   catch (e: any) {
     console.error(chalk.bold.red('指令执行失败:'), e.message)
-    return ''
+    return e.message
   }
 
   return iconv.decode(Buffer.from(res), 'GBK').trim()
