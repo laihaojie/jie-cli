@@ -50,8 +50,8 @@ export function runCmdGetRes(cmd, shell?: string) {
     else { res = execSync(cmd, { windowsHide: true, stdio: 'pipe' }) }
   }
   catch (e: any) {
-    console.error(chalk.bold.red('指令执行失败:'), e.message)
-    return e.message
+    console.error(chalk.bold.red('指令执行失败:'), iconv.decode(Buffer.from(e.message), 'GBK').trim())
+    return iconv.decode(Buffer.from(e.message), 'GBK').trim()
   }
 
   return iconv.decode(Buffer.from(res), 'GBK').trim()
