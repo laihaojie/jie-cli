@@ -5,7 +5,7 @@ import chalk from 'chalk'
 import iconv from 'iconv-lite'
 import { getGitBashPath } from './terminal'
 
-export function runCmd(cmd) {
+export function runCmd(cmd, shell?: string) {
   if (!cmd) {
     console.error(chalk.bold.red('缺少指令配置'))
     process.exit(1)
@@ -18,7 +18,7 @@ export function runCmd(cmd) {
         globalThis.__GIT_BASH = getGitBashPath()
 
       if (globalThis.__GIT_BASH)
-        execSync(cmd, { windowsHide: true, stdio: 'inherit', shell: globalThis.__GIT_BASH })
+        execSync(cmd, { windowsHide: true, stdio: 'inherit', shell: shell || globalThis.__GIT_BASH })
       else
         execSync(cmd, { windowsHide: true, stdio: 'inherit' })
     }
@@ -30,7 +30,7 @@ export function runCmd(cmd) {
   }
 }
 
-export function runCmdGetRes(cmd) {
+export function runCmdGetRes(cmd, shell?: string) {
   if (!cmd) {
     console.error(chalk.bold.red('缺少指令配置'))
     process.exit(1)
@@ -44,7 +44,7 @@ export function runCmdGetRes(cmd) {
         globalThis.__GIT_BASH = getGitBashPath()
 
       if (globalThis.__GIT_BASH)
-        res = execSync(cmd, { windowsHide: true, stdio: 'pipe', shell: globalThis.__GIT_BASH })
+        res = execSync(cmd, { windowsHide: true, stdio: 'pipe', shell: shell || globalThis.__GIT_BASH })
       else
         res = execSync(cmd, { windowsHide: true, stdio: 'pipe' })
     }
