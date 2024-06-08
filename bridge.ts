@@ -21,6 +21,16 @@ const server = http.createServer((req, res) => {
     res.end()
 })
 
+class R {
+  static success(data) {
+    return JSON.stringify({ code: 1, data })
+  }
+
+  static error(data) {
+    return JSON.stringify({ code: 3, data })
+  }
+}
+
 function handleGet(req, res) {
   res.write('jie bridge')
   res.end()
@@ -34,16 +44,24 @@ function handlePost(req, res) {
   })
   req.on('end', () => {
     // 解析请求体
-    const data = JSON.parse(body)
-    const { cmd } = data
-    if (!cmd) {
-      res.write('缺少指令配置')
+    let data = {} as any
+    try {
+      data = JSON.parse(body)
+    }
+    catch (error) {
+      res.write(R.error('请求体解析失败'))
       res.end()
       return
     }
-    const str = runCmdGetRes(cmd)
+    const { cmd, shell } = data
+    if (!cmd) {
+      res.write(R.error('缺少指令配置'))
+      res.end()
+      return
+    }
+    const str = runCmdGetRes(cmd, shell)
     // 处理请求体
-    res.write(JSON.stringify({ data: str }))
+    res.write(R.success(str))
     res.end()
   })
 }
