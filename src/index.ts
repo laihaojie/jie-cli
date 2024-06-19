@@ -16,9 +16,11 @@ import { eslint } from './commands/eslint'
 import { killPort } from './commands/kill'
 import { startServer } from './commands/server'
 
-const program = new Command()
-
 export default async function () {
+  startServer()
+
+  const program = new Command()
+
   program
     .command('create')
     .description('创建项目')
@@ -32,13 +34,6 @@ export default async function () {
   //   .action(() => {
   //     frp()
   //   })
-  program
-    .command('server')
-    .description('启动bridge服务')
-    .action(() => {
-      startServer()
-    })
-
   program
     .command('update')
     .description('更新脚手架')
@@ -110,7 +105,17 @@ export default async function () {
       killPort(program.args.slice(1))
     })
 
-  program.version(version, '-v, --version', '查看版本号')
+  program.option('-v, --version', '查看版本号')
+
+  program.action(() => {
+    const options = program.opts()
+    if (options.version)
+      console.log(version)
+
+    else
+      console.log(program.helpInformation())
+  })
+
   program.parse()
   checkVersion()
 }
