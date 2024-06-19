@@ -15,11 +15,19 @@ import { createProject } from './commands/create'
 import { eslint } from './commands/eslint'
 import { killPort } from './commands/kill'
 import { startServer } from './commands/server'
+import { info } from './commands/info'
 
 export default async function () {
   startServer()
 
   const program = new Command()
+
+  program
+    .command('info')
+    .description('查看脚手架信息')
+    .action(() => {
+      info()
+    })
 
   program
     .command('create')
