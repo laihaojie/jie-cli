@@ -61,8 +61,12 @@ function handlePost(req, res) {
         return
       }
       const str = runCmdGetRes(cmd, shell)
+      const pwd = runCmdGetRes('pwd', shell)
       // 处理请求体
-      res.write(R.success(str))
+      res.write(R.success({
+        data: str,
+        pwd,
+      }))
       res.end()
     }
     catch (error) {
