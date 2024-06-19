@@ -3,7 +3,8 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   entries: [
     { input: 'index', name: 'jie' },
-    { input: 'bridge', name: 'bridge' },
+    { input: 'src/bridge', name: 'bridge' },
+    { input: 'src/check', name: 'check' },
   ],
   clean: true,
   declaration: true,

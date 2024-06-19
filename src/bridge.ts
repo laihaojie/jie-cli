@@ -1,6 +1,6 @@
 import http from 'node:http'
 import process from 'node:process'
-import { runCmdGetRes } from './src/utils/run'
+import { runCmdGetRes } from './utils/run'
 
 // Create an HTTP server
 const server = http.createServer((req, res) => {
