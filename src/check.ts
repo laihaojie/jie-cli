@@ -1,5 +1,5 @@
-import { execSync } from 'node:child_process'
 import { saveVersion } from './utils/store'
+import { runCmdGetRes } from './utils/run'
 
-const latest_version = execSync('npm view @djie/cli version', { stdio: 'pipe' }).toString().trim()
+const latest_version = runCmdGetRes('npm view @djie/cli version')
 saveVersion(latest_version)
