@@ -45,7 +45,7 @@ function handlePost(req, res) {
   req.on('end', () => {
     try {
       // 解析请求体
-      let data = {} as any
+      let data = {} as Record<string, string>
       try {
         data = JSON.parse(body)
       }
@@ -54,18 +54,32 @@ function handlePost(req, res) {
         res.end()
         return
       }
-      const { cmd, shell } = data
+      const { cmd, shell = '', cwd } = data
       if (!cmd) {
         res.write(R.error('缺少指令配置'))
         res.end()
         return
       }
-      const str = runCmdGetRes(cmd, { shell })
-      const pwd = runCmdGetRes('pwd', { shell })
+      const isPowerShell = shell.includes('powershell')
+      let command = ''
+      if (isPowerShell)
+        command = `${cmd}; echo __jie__; pwd; echo __jie__`
+      else
+        command = `${cmd} && echo __jie__ && pwd && echo __jie__`
+
+      const str = runCmdGetRes(command, { shell, cwd })
+
+      let wd = ''
+      const currentWorkDir = str.match(/__jie__\s*([\s\S]*)\s*__jie__/)?.[1] || ''
+      if (isPowerShell)
+        wd = currentWorkDir.trim().match(/.*$/)?.[0] || ''
+      else
+        wd = currentWorkDir.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`))
+
       // 处理请求体
       res.write(R.success({
         data: str,
-        pwd: pwd.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`)),
+        cwd: wd,
       }))
       res.end()
     }
