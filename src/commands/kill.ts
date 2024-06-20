@@ -16,7 +16,7 @@ export function killPort([port]: any[]) {
   if (isWin) {
     const cmd = `netstat -ano | findstr ${port}`
     console.log(chalk.white(`执行查询命令：${cmd}`), '\n')
-    const res = runCmdGetRes(cmd, 'powershell.exe')
+    const res = runCmdGetRes(cmd, { shell: 'powershell.exe' })
     console.log(chalk.green(res), '\n')
 
     console.log(chalk.red(`端口号：${chalk.bold(`${port}`)}`), '\n')
@@ -35,7 +35,7 @@ export function killPort([port]: any[]) {
             // 杀死进程
             const cmd = `taskkill /pid ${pid} -f`
             console.log(chalk.white(`执行杀死PID命令：${cmd}`), '\n')
-            const res = runCmdGetRes(cmd, 'powershell.exe')
+            const res = runCmdGetRes(cmd, { shell: 'powershell.exe' })
             console.log(chalk.green(res), '\n')
             break
           }

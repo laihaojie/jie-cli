@@ -60,12 +60,12 @@ function handlePost(req, res) {
         res.end()
         return
       }
-      const str = runCmdGetRes(cmd, shell)
-      const pwd = runCmdGetRes('pwd', shell)
+      const str = runCmdGetRes(cmd, { shell })
+      const pwd = runCmdGetRes('pwd', { shell })
       // 处理请求体
       res.write(R.success({
         data: str,
-        pwd,
+        pwd: pwd.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`)),
       }))
       res.end()
     }

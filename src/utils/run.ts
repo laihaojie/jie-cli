@@ -1,3 +1,4 @@
+import type { ExecSyncOptions } from 'node:child_process'
 import { execSync } from 'node:child_process'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
@@ -5,7 +6,7 @@ import chalk from 'chalk'
 import iconv from 'iconv-lite'
 import { getGitBashPath } from './terminal'
 
-export function runCmd(cmd, shell?: string) {
+export function runCmd(cmd, options = {} as ExecSyncOptions) {
   if (!cmd) {
     console.error(chalk.bold.red('缺少指令配置'))
     return
@@ -18,18 +19,18 @@ export function runCmd(cmd, shell?: string) {
         globalThis.__GIT_BASH = getGitBashPath()
 
       if (globalThis.__GIT_BASH)
-        execSync(cmd, { windowsHide: true, stdio: 'inherit', shell: shell || globalThis.__GIT_BASH })
+        execSync(cmd, { windowsHide: true, stdio: 'inherit', ...options, shell: options.shell || globalThis.__GIT_BASH })
       else
-        execSync(cmd, { windowsHide: true, stdio: 'inherit' })
+        execSync(cmd, { windowsHide: true, stdio: 'inherit', ...options })
     }
-    else { execSync(cmd, { windowsHide: true, stdio: 'inherit' }) }
+    else { execSync(cmd, { windowsHide: true, stdio: 'inherit', ...options }) }
   }
   catch (e: any) {
     console.error(chalk.bold.red('指令执行失败:'), e.message)
   }
 }
 
-export function runCmdGetRes(cmd, shell?: string) {
+export function runCmdGetRes(cmd, options = {} as ExecSyncOptions) {
   if (!cmd) {
     console.error(chalk.bold.red('缺少指令配置'))
     return ''
@@ -43,11 +44,11 @@ export function runCmdGetRes(cmd, shell?: string) {
         globalThis.__GIT_BASH = getGitBashPath()
 
       if (globalThis.__GIT_BASH)
-        res = execSync(cmd, { windowsHide: true, stdio: 'pipe', shell: shell || globalThis.__GIT_BASH })
+        res = execSync(cmd, { windowsHide: true, stdio: 'pipe', ...options, shell: options.shell || globalThis.__GIT_BASH })
       else
-        res = execSync(cmd, { windowsHide: true, stdio: 'pipe' })
+        res = execSync(cmd, { windowsHide: true, stdio: 'pipe', ...options })
     }
-    else { res = execSync(cmd, { windowsHide: true, stdio: 'pipe' }) }
+    else { res = execSync(cmd, { windowsHide: true, stdio: 'pipe', ...options }) }
   }
   catch (e: any) {
     console.error(chalk.bold.red('指令执行失败:'), iconv.decode(Buffer.from(e.message), 'GBK').trim())
