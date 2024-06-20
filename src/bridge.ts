@@ -1,4 +1,5 @@
 import http from 'node:http'
+import fs from 'node:fs'
 import process from 'node:process'
 import { runCmdGetRes } from './utils/run'
 
@@ -22,12 +23,14 @@ const server = http.createServer((req, res) => {
 })
 
 class R {
-  static success(data) {
-    return JSON.stringify({ code: 1, data })
+  static success(res, data) {
+    res.write({ code: 1, data })
+    res.end()
   }
 
-  static error(data) {
-    return JSON.stringify({ code: 3, data })
+  static error(res, data) {
+    res.write({ code: 3, data })
+    res.end()
   }
 }
 
@@ -50,16 +53,21 @@ function handlePost(req, res) {
         data = JSON.parse(body)
       }
       catch (error) {
-        res.write(R.error('请求体解析失败'))
-        res.end()
+        R.error(res, '请求体解析失败')
         return
       }
       const { cmd, shell = '', cwd } = data
       if (!cmd) {
-        res.write(R.error('缺少指令配置'))
-        res.end()
+        R.error(res, '缺少指令配置')
         return
       }
+      if (cwd) {
+        if (!fs.existsSync(cwd)) {
+          R.success(res, { data: '目录不存在', cwd: '' })
+          return
+        }
+      }
+
       const isPowerShell = shell.includes('powershell')
       let command = ''
       if (isPowerShell)
@@ -77,15 +85,10 @@ function handlePost(req, res) {
         wd = currentWorkDir.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`))
 
       // 处理请求体
-      res.write(R.success({
-        data: str,
-        cwd: wd,
-      }))
-      res.end()
+      R.success(res, { data: str, cwd: wd })
     }
     catch (error) {
-      res.write(R.error('未知错误'))
-      res.end()
+      R.error(res, '未知错误')
     }
   })
 }
