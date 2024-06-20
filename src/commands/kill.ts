@@ -1,8 +1,14 @@
 import process from 'node:process'
 import chalk from 'chalk'
 import { runCmdGetRes } from '../utils/run'
+import { localServer } from '../config'
 
 export function killPort([port]: any[]) {
+  if (port === 'server') {
+    const urlObj = new URL(localServer)
+    port = urlObj.port
+  }
+
   if (!port) {
     console.error(chalk.red('请输入端口号'))
     return

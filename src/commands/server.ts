@@ -4,6 +4,10 @@ import process from 'node:process'
 import { localServer } from '../config'
 
 export function startServer() {
+  const urlObj = new URL(localServer)
+
+  if(process.argv.join(' ').includes('kill ' + urlObj.port)) return
+
   const serverFilePath = path.resolve(__dirname, 'bridge.cjs')
   // 判断是否已经启动服务 活性检测 请求 http://127.0.0.1:32677
   fetch(localServer).then(() => {
