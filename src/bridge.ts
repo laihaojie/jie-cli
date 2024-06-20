@@ -24,12 +24,12 @@ const server = http.createServer((req, res) => {
 
 class R {
   static success(res, data) {
-    res.write({ code: 1, data })
+    res.write(JSON.stringify({ code: 1, data }))
     res.end()
   }
 
   static error(res, data) {
-    res.write({ code: 3, data })
+    res.write(JSON.stringify({ code: 3, data }))
     res.end()
   }
 }
@@ -75,17 +75,19 @@ function handlePost(req, res) {
       else
         command = `${cmd} && echo __jie__ && pwd && echo __jie__`
 
-      const str = runCmdGetRes(command, { shell, cwd })
+      const str = runCmdGetRes(command, { shell, cwd: cwd || undefined })
+
+      const templateReg = /__jie__\s*([\s\S]*)\s*__jie__/
 
       let wd = ''
-      const currentWorkDir = str.match(/__jie__\s*([\s\S]*)\s*__jie__/)?.[1] || ''
+      const currentWorkDir = str.match(templateReg)?.[1] || ''
       if (isPowerShell)
-        wd = currentWorkDir.trim().match(/.*$/)?.[0] || ''
+        wd = currentWorkDir.trim().match(/.*$/)?.[0].trim() || ''
       else
-        wd = currentWorkDir.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`))
+        wd = currentWorkDir.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`)).trim()
 
       // 处理请求体
-      R.success(res, { data: str, cwd: wd })
+      R.success(res, { data: str.replace(templateReg, ''), cwd: wd })
     }
     catch (error) {
       R.error(res, '未知错误')

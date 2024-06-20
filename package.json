@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.61",
+  "version": "1.0.62",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -25,6 +25,7 @@
   ],
   "scripts": {
     "dev": "esno index.ts",
+    "bridge": "esno src/bridge.ts",
     "build:tsc": "tsc",
     "build:tsup": "tsup",
     "build": "unbuild",
