@@ -81,13 +81,19 @@ function handlePost(req, res) {
 
       let wd = ''
       const currentWorkDir = str.match(templateReg)?.[1] || ''
-      if (isPowerShell)
+      if (isPowerShell) {
         wd = currentWorkDir.trim().match(/.*$/)?.[0].trim() || ''
-      else
+        if (wd.match(/Path\s+:/)) {
+          wd = wd.replace(/Path\s+:/, '').trim()
+        }
+      }
+
+      else {
         wd = currentWorkDir.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`)).trim()
+      }
 
       // 处理请求体
-      R.success(res, { data: str.replace(templateReg, ''), cwd: wd })
+      R.success(res, { data: str.replace(templateReg, '').replace(/\n$/, ''), cwd: wd })
     }
     catch (error) {
       R.error(res, '未知错误')
