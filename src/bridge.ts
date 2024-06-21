@@ -75,7 +75,7 @@ function handlePost(req, res) {
       else
         command = `${cmd} && echo __jie__ && pwd && echo __jie__`
 
-      let str = runCmdGetRes(command, { shell, cwd: cwd || undefined })
+      let str = runCmdGetRes(command, { shell: shell || undefined, cwd: cwd || undefined })
 
       if (str.trim().startsWith('__jie__')) str = `\n${str}`
 
