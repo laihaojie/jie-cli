@@ -75,12 +75,20 @@ function handlePost(req, res) {
       else
         command = `${cmd} && echo __jie__ && pwd && echo __jie__`
 
-      const str = runCmdGetRes(command, { shell, cwd: cwd || undefined })
+      let str = runCmdGetRes(command, { shell, cwd: cwd || undefined })
 
-      const templateReg = /__jie__\s*([\s\S]*)\s*__jie__/
+      if (str.trim().startsWith('__jie__')) str = `\n${str}`
+
+      const templateReg = /[^ ]__jie__\s*([\s\S]*?)\s*__jie__/
 
       let wd = ''
       const currentWorkDir = str.match(templateReg)?.[1] || ''
+
+      if (!currentWorkDir) {
+        R.success(res, { data: `Command failed: ${cmd}`, cwd: '' })
+        return
+      }
+
       if (isPowerShell) {
         wd = currentWorkDir.trim().match(/.*$/)?.[0].trim() || ''
         if (wd.match(/Path\s+:/)) {
