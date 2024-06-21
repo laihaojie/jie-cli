@@ -79,7 +79,7 @@ function handlePost(req, res) {
 
       if (str.trim().startsWith('__jie__')) str = `\n${str}`
 
-      const templateReg = /[^ ]__jie__\s*([\s\S]*?)\s*__jie__/
+      const templateReg = /[^echo  ]__jie__\s*([\s\S]*?)\s*__jie__/
 
       let wd = ''
       const currentWorkDir = str.match(templateReg)?.[1] || ''
