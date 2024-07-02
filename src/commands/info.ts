@@ -28,6 +28,5 @@ export function info() {
     const spaceLength = maxKeyLength - keyLength
     console.log(`${log.key}：${' '.repeat(spaceLength)}${' '.repeat(3)}${log.value}`)
   }
-  console.log(`\n`)
-
+  console.log('')
 } 

@@ -7,7 +7,7 @@ import main from './src/index'
 const startTime = Date.now()
 
 process.on('exit', () => {
-  console.log(`耗时：${Date.now() - startTime} ${globalThis.__IS_RUNNING ? chalk.green('ms') : chalk.yellow('ms')}`)
+  console.log(`Done in ${((Date.now() - startTime) / 1000).toFixed(1)}${globalThis.__IS_RUNNING ? 's' : ''}`)
 })
 
 main()

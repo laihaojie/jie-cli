@@ -118,7 +118,7 @@ export default async function () {
   program.action(() => {
     const options = program.opts()
     if (options.version)
-      console.log(version)
+      console.log(`v${version}`)
 
     else
       console.log(program.helpInformation())

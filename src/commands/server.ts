@@ -20,13 +20,6 @@ export function startServer() {
       windowsHide: true,
     })
     server.unref()
-    // 监听服务是否启动成功 
-    server.stdout?.on('data', (data) => {
-      console.log('阿杰')
-      fetch(localServer)
-      .then(() => { globalThis.__IS_RUNNING = true })
-      .catch(() => { globalThis.__IS_RUNNING = false })
-    })
     fetch(localServer)
       .then(() => { globalThis.__IS_RUNNING = true })
       .catch(() => { globalThis.__IS_RUNNING = false })
