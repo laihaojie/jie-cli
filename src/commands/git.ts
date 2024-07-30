@@ -15,13 +15,14 @@ export async function gitPush(message) {
     execSync('git push', { stdio: 'inherit' })
   }
   catch (err) {
-    console.error(`${chalk.bold.red('运行出错')}`)
+    console.error(`${chalk.bold.red(`运行出错${err}`)}`)
     process.exit(1)
   }
 }
 
 export function openGitRepoByBrowser() {
   const res = execSync('git remote -v', { stdio: 'pipe' }).toString().trim()
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
   const url = res.match(/origin\s+(.*)\s+\(fetch\)/)[1]
   if (url)
     openInBrowser(url)

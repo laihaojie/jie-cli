@@ -34,14 +34,14 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "@djie/eslint-config": "2.1.4",
+    "@djie/eslint-config": "2.1.7",
     "@types/node": "^18.11.0",
     "bumpp": "^8.2.1",
     "chalk": "^4.1.2",
     "commander": "^9.4.1",
     "copy-paste": "^1.5.3",
     "degit": "^2.8.4",
-    "eslint": "8.55.0",
+    "eslint": "9.8.0",
     "esno": "^4.7.0",
     "fast-glob": "^3.3.2",
     "fs-extra": "^10.1.0",

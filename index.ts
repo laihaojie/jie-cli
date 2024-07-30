@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import process from 'node:process'
-import chalk from 'chalk'
 import main from './src/index'
 
 const startTime = Date.now()

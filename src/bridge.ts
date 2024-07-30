@@ -53,7 +53,7 @@ function handlePost(req, res) {
         data = JSON.parse(body)
       }
       catch (error) {
-        R.error(res, '请求体解析失败')
+        R.error(res, `请求体解析失败${error}`)
         return
       }
       const { cmd, shell = '', cwd } = data
@@ -79,7 +79,8 @@ function handlePost(req, res) {
 
       if (str.trim().startsWith('__jie__')) str = `\n${str}`
 
-      const templateReg = /[^echo  ]__jie__\s*([\s\S]*?)\s*__jie__/
+      // eslint-disable-next-line regexp/no-super-linear-backtracking
+      const templateReg = /[^echo ]__jie__\s*([\s\S]*?)\s*__jie__/
 
       let wd = ''
       const currentWorkDir = str.match(templateReg)?.[1] || ''
@@ -104,7 +105,7 @@ function handlePost(req, res) {
       R.success(res, { data: str.replace(templateReg, '').replace(/\n$/, ''), cwd: wd })
     }
     catch (error) {
-      R.error(res, '未知错误')
+      R.error(res, `未知错误${error}`)
     }
   })
 }

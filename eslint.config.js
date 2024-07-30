@@ -4,4 +4,9 @@ module.exports = jie({
   rules: {
     'no-console': 'off',
   },
+}, {
+  ignores: [
+    'bin1/template',
+    'bin',
+  ],
 })

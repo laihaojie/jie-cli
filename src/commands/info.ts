@@ -1,7 +1,7 @@
+import process from 'node:process'
 import chalk from 'chalk'
 import { author, homepage, name, version } from '../../package.json'
 import { localServer } from '../config'
-import process from 'node:process'
 
 export function info() {
   const urlObj = new URL(localServer)
@@ -18,15 +18,15 @@ export function info() {
   // 找到最长的key 包含中文 英文 数字 一个中文占两个字符
   let maxKeyLength = 0
   for (const log of logList) {
-    const keyLength = log.key.replace(/[^\x00-\xff]/g, 'aa').length
+    const keyLength = log.key.replace(/[^\x00-\xFF]/g, 'aa').length
     if (keyLength > maxKeyLength) {
       maxKeyLength = keyLength
     }
   }
   for (const log of logList) {
-    const keyLength = log.key.replace(/[^\x00-\xff]/g, 'aa').length
+    const keyLength = log.key.replace(/[^\x00-\xFF]/g, 'aa').length
     const spaceLength = maxKeyLength - keyLength
     console.log(`${log.key}：${' '.repeat(spaceLength)}${' '.repeat(3)}${log.value}`)
   }
   console.log('')
-} 
+}

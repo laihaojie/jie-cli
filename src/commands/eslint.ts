@@ -17,7 +17,7 @@ export async function eslint() {
 
   // 判断是否安装了 '@djie/eslint-config'
   const packageName = '@djie/eslint-config'
-  // eslint-disable-next-line ts/no-var-requires, ts/no-require-imports
+  // eslint-disable-next-line ts/no-require-imports
   let packageJson = require(packageJsonPath)
   const devDependencies = packageJson.devDependencies || {}
   const dependencies = packageJson.dependencies || {}

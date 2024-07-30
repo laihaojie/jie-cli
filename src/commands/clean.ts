@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import { rimraf } from 'rimraf'
 import chalk from 'chalk'
 import ora from 'ora'
 import { runCmd } from '../utils/run'
