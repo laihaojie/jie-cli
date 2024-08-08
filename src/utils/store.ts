@@ -2,8 +2,10 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-if (!fs.existsSync(path.resolve(os.homedir(), './.jie')))
-  fs.mkdirSync(path.resolve(os.homedir(), './.jie'))
+export const rootDir = path.resolve(os.homedir(), './.jie')
+
+if (!fs.existsSync(rootDir))
+  fs.mkdirSync(rootDir)
 
 const versionPath = path.resolve(os.homedir(), './.jie/version.txt')
 

@@ -16,6 +16,7 @@ import { eslint } from './commands/eslint'
 import { killPort } from './commands/kill'
 import { startServer } from './commands/server'
 import { info } from './commands/info'
+import { rb } from './commands/rb'
 
 export default async function () {
   startServer()
@@ -111,6 +112,17 @@ export default async function () {
     .description('杀死端口')
     .action(() => {
       killPort(program.args.slice(1))
+    })
+
+  // rb run
+  // rb set
+  // rb get
+  program
+    .command('rb')
+    .argument('<action>')
+    .description('日报')
+    .action((action) => {
+      rb(action, program.args.slice(2))
     })
 
   program.option('-v, --version', '查看版本号')
