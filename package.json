@@ -33,6 +33,9 @@
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."
   },
+  "dependencies": {
+    "sharp": "^0.33.5"
+  },
   "devDependencies": {
     "@djie/eslint-config": "2.1.7",
     "@types/node": "^18.11.0",

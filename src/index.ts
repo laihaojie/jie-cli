@@ -17,6 +17,7 @@ import { killPort } from './commands/kill'
 import { startServer } from './commands/server'
 import { info } from './commands/info'
 import { rb } from './commands/rb'
+import { generatePwaIcon } from './commands/pwa'
 
 export default async function () {
   startServer()
@@ -50,7 +51,8 @@ export default async function () {
       update()
     })
 
-  program.command('push')
+  program
+    .command('push')
     .description('提交代码')
     .action(() => {
       gitPushAll(program.args.slice(1).join(' '))
@@ -123,6 +125,14 @@ export default async function () {
     .description('日报')
     .action((action) => {
       rb(action, program.args.slice(2))
+    })
+
+  program
+    .command('pwa')
+    .argument('<icon_path>', '需要转换的icon路径，输出默认在icon同级目录下')
+    .description('生成pwa图标')
+    .action((icon_path) => {
+      generatePwaIcon(icon_path)
     })
 
   program.option('-v, --version', '查看版本号')
