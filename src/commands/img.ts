@@ -69,7 +69,7 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
   const generateList = [] as GenerateOptions[]
 
   if (widthList.length === 0 && heightList.length === 0) {
-    if (!options.name && !options.zip && outputDir === path.dirname(inputPath)) {
+    if (!options.zip && outputDir === path.dirname(inputPath) && (path.basename(inputPath, `.${ext}`) === options.name)) {
       console.log(chalk.green('输出的路径和输入的路径一致，跳过图片操作'))
       process.exit(0)
     }
