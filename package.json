@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@djie/eslint-config": "2.1.7",
-    "@djie/utils": "^1.0.36",
+    "@djie/utils": "^1.0.37",
     "@types/node": "^18.11.0",
     "adm-zip": "^0.5.15",
     "bumpp": "^8.2.1",
@@ -49,6 +49,7 @@
     "eslint": "9.8.0",
     "esno": "^4.7.0",
     "fast-glob": "^3.3.2",
+    "file-type": "^16.5.4",
     "fs-extra": "^10.1.0",
     "iconv-lite": "^0.6.3",
     "inquirer": "8.2.4",

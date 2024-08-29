@@ -1,12 +1,13 @@
 import fs from 'node:fs'
 import process from 'node:process'
 import path from 'node:path'
-import type { Buffer } from 'node:buffer'
+import { Buffer } from 'node:buffer'
 import chalk from 'chalk'
 import sharp from 'sharp'
 import ora from 'ora'
-import { isUrl } from '@djie/utils'
+import { isUrl, isValidFileName, randomStr } from '@djie/utils'
 import AmdZip from 'adm-zip'
+import { fromBuffer } from 'file-type'
 
 interface ImageResizeOptions {
   width: number[]
@@ -14,11 +15,29 @@ interface ImageResizeOptions {
   name?: string
   output?: string
   zip?: boolean
+  __isUrl?: boolean
 }
 
 export async function imgResize(image_path: string, options: ImageResizeOptions) {
+  options.__isUrl = isUrl(image_path)
+
   if (isUrl(image_path)) {
-    console.log('这是一个URL')
+    // image_path = 'https://g.lingman.tech/app/lmapp/dev/uploadfiles/20230514/H6jJyPJ4Di5sBQRzm4zj8MWeiTtT6cMj.png'
+    // image_path = 'https://img0.baidu.com/it/u=652041139,3023980007&fm=253&fmt=auto&app=138&f=JPG?w=460&h=649'
+
+    const buffer = await (await fetch(image_path)).arrayBuffer()
+    const fileTypeInfo = await fromBuffer(Buffer.from(buffer))
+    const urlObj = new URL(image_path)
+    let imgName
+    if (isValidFileName(path.basename(urlObj.pathname))) {
+      imgName = `${path.basename(urlObj.pathname, path.extname(urlObj.pathname))}.${fileTypeInfo?.ext}`
+    }
+    else {
+      imgName = `${randomStr(10)}.${fileTypeInfo?.ext}`
+    }
+
+    const inputPath = path.join(process.cwd(), imgName)
+    await handleImg(Buffer.from(buffer), inputPath, options)
   }
   else {
     const inputPath = path.join(process.cwd(), image_path)
@@ -52,7 +71,7 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
   const widthList = options.width
   const heightList = options.height
 
-  if (widthList.length === 0 && heightList.length === 0 && !options.name && !options.zip && !options.output) {
+  if (widthList.length === 0 && heightList.length === 0 && !options.name && !options.zip && !options.output && !options.__isUrl) {
     console.log(chalk.green('没接收任何指令，跳过图片操作'))
     process.exit(0)
   }
@@ -69,7 +88,7 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
   const generateList = [] as GenerateOptions[]
 
   if (widthList.length === 0 && heightList.length === 0) {
-    if (!options.zip && outputDir === path.dirname(inputPath) && (path.basename(inputPath, `.${ext}`) === options.name)) {
+    if (!options.zip && outputDir === path.dirname(inputPath) && (path.basename(inputPath, `.${ext}`) === options.name) && !options.__isUrl) {
       console.log(chalk.green('输出的路径和输入的路径一致，跳过图片操作'))
       process.exit(0)
     }
