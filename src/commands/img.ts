@@ -36,59 +36,59 @@ export async function imgResize(image_path: string, options: ImageResizeOptions)
       process.exit(1)
     }
 
-    // 判断是不是一个图片
-    const ext = inputPath.split('.').pop()
-    if (!['jpg', 'jpeg', 'png'].includes(ext)) {
-      console.log(chalk.red('请传入图片'))
-      process.exit(1)
-    }
-
-    const widthList = options.width
-    const heightList = options.height
-
-    if (widthList.length === 0 && heightList.length === 0 && !options.name && !options.zip && !options.output) {
-      console.log(chalk.green('没接收任何指令，跳过图片操作'))
-      process.exit(0)
-    }
-
-    // 处理output
-    const outputDir = options.output ? path.resolve(process.cwd(), options.output) : path.dirname(inputPath)
-
-    // 处理zip
-    const zipDir = options.zip ? outputDir : ''
-
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true })
-    }
-    const generateList = [] as GenerateOptions[]
-
-    if (widthList.length === 0 && heightList.length === 0) {
-      if (!options.name && !options.zip && outputDir === path.dirname(inputPath)) {
-        console.log(chalk.green('输出的路径和输入的路径一致，跳过图片操作'))
-        process.exit(0)
-      }
-      const outputPath = path.join(outputDir, options.name ? `${options.name}.${ext}` : path.basename(inputPath))
-      const buffer = fs.readFileSync(inputPath)
-      generateList.push({ buffer, output: outputPath })
-    }
-    else {
-      const sizeList = widthList.length > heightList.length ? widthList : heightList
-      for (let i = 0; i < sizeList.length; i++) {
-        const width = widthList[i] || null
-        const height = heightList[i] || null
-        const sharpInstance = sharp(inputPath)
-        const buffer = await sharpInstance.resize(width, height).toBuffer()
-        const outputName = `${options.name ? options.name : path.basename(inputPath, `.${ext}`)}-${width || height}x${height || width}.${ext}`
-        const outputPath = path.join(outputDir, outputName)
-        generateList.push({ buffer, output: outputPath })
-      }
-    }
-    generateByOptions(generateList, zipDir)
+    const buffer = fs.readFileSync(inputPath)
+    await handleImg(buffer, inputPath, options)
   }
 }
 
-async function handleImg(buffer: Buffer, imgPath, options: ImageResizeOptions) {
+async function handleImg(buffer: Buffer, inputPath: string, options: ImageResizeOptions) {
+  // 判断是不是一个图片
+  const ext = inputPath.split('.').pop()
+  if (!['jpg', 'jpeg', 'png'].includes(ext)) {
+    console.log(chalk.red('请传入图片'))
+    process.exit(1)
+  }
 
+  const widthList = options.width
+  const heightList = options.height
+
+  if (widthList.length === 0 && heightList.length === 0 && !options.name && !options.zip && !options.output) {
+    console.log(chalk.green('没接收任何指令，跳过图片操作'))
+    process.exit(0)
+  }
+
+  // 处理output
+  const outputDir = options.output ? path.resolve(process.cwd(), options.output) : path.dirname(inputPath)
+
+  // 处理zip
+  const zipDir = options.zip ? outputDir : ''
+
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true })
+  }
+  const generateList = [] as GenerateOptions[]
+
+  if (widthList.length === 0 && heightList.length === 0) {
+    if (!options.name && !options.zip && outputDir === path.dirname(inputPath)) {
+      console.log(chalk.green('输出的路径和输入的路径一致，跳过图片操作'))
+      process.exit(0)
+    }
+    const outputPath = path.join(outputDir, options.name ? `${options.name}.${ext}` : path.basename(inputPath))
+    generateList.push({ buffer, output: outputPath })
+  }
+  else {
+    const sizeList = widthList.length > heightList.length ? widthList : heightList
+    for (let i = 0; i < sizeList.length; i++) {
+      const width = widthList[i] || null
+      const height = heightList[i] || null
+      const sharpInstance = sharp(buffer)
+      const outputBuffer = await sharpInstance.resize(width, height).toBuffer()
+      const outputName = `${options.name ? options.name : path.basename(inputPath, `.${ext}`)}-${width || height}x${height || width}.${ext}`
+      const outputPath = path.join(outputDir, outputName)
+      generateList.push({ buffer: outputBuffer, output: outputPath })
+    }
+  }
+  generateByOptions(generateList, zipDir)
 }
 
 interface GenerateOptions {
