@@ -17,7 +17,7 @@ import { killPort } from './commands/kill'
 import { startServer } from './commands/server'
 import { info } from './commands/info'
 import { rb } from './commands/rb'
-import { generatePwaIcon } from './commands/pwa'
+import { generatePwaIcon, imgResize } from './commands/img'
 
 export default async function () {
   startServer()
@@ -132,7 +132,49 @@ export default async function () {
     .argument('<icon_path>', '需要转换的icon路径，输出默认在icon同级目录下')
     .description('生成pwa图标')
     .action((icon_path) => {
-      generatePwaIcon(icon_path)
+      imgResize(icon_path, { width: [192, 512], height: [], name: 'icon' })
+    })
+
+  function stringToNumber(val: string, prev: number[]) {
+    const num = Number.parseInt(val)
+
+    if (Number.isNaN(num))
+      throw new Error('请输入数字')
+
+    if (num <= 0) {
+      throw new Error('请输入正整数')
+    }
+
+    if (prev.includes(num))
+      return prev
+
+    return [...new Set(prev.concat(num))]
+  }
+
+  program
+    .command('img')
+    .argument('<img_path>', '需要转换的图片路径, 可以是文件路径或者图片URL')
+    .option('-o, --output <output_path>', '输出路径')
+    .option('-w, --width <width>', '宽度', stringToNumber, [])
+    .option('-h, --height <height>', '高度', stringToNumber, [])
+    .option('-n, --name <name>', '输出文件名')
+    .option('-z, --zip', '是否输出压缩包')
+    .description('图片转换')
+    .action((img_path, options) => {
+      imgResize(img_path, options)
+    })
+
+  program
+    .command('test')
+    .argument('<test>', '测试')
+    .option('-a, --all ', '所有')
+    .option('--debug-server', 'debug')
+    .option('-w, --width <宽度>', '宽度', stringToNumber, [])
+    .option('-h, --height <高度>', '高度', stringToNumber, [])
+    .option('--zip', '是否输出压缩包')
+    .description('测试 命令行解析参数')
+    .action((...args) => {
+      console.log(args.slice(0, -1))
     })
 
   program.option('-v, --version', '查看版本号')
