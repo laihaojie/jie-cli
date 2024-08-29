@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import process from 'node:process'
-import { Command } from 'commander'
+import { Command, Option } from 'commander'
 import chalk from 'chalk'
 import { version } from '../package.json'
 import { checkVersion } from './utils/checkVersion'
@@ -17,7 +17,7 @@ import { killPort } from './commands/kill'
 import { startServer } from './commands/server'
 import { info } from './commands/info'
 import { rb } from './commands/rb'
-import { generatePwaIcon, imgResize } from './commands/img'
+import { generatePwaIcon, getSharpFormat, imgResize } from './commands/img'
 
 export default async function () {
   startServer()
@@ -158,6 +158,7 @@ export default async function () {
     .option('-w, --width <width>', '宽度', stringToNumber, [])
     .option('-h, --height <height>', '高度', stringToNumber, [])
     .option('-n, --name <name>', '输出文件名')
+    .addOption(new Option('-t, --type <格式>', '输出格式类型').choices(getSharpFormat()))
     .option('-z, --zip', '是否输出压缩包')
     .description('图片转换')
     .action((img_path, options) => {
@@ -172,6 +173,7 @@ export default async function () {
     .option('-w, --width <宽度>', '宽度', stringToNumber, [])
     .option('-h, --height <高度>', '高度', stringToNumber, [])
     .option('--zip', '是否输出压缩包')
+    .addOption(new Option('-t, --type <格式>', '输出格式类型').choices(['jpg', 'png']))
     .description('测试 命令行解析参数')
     .action((...args) => {
       console.log(args.slice(0, -1))
