@@ -38,11 +38,12 @@
   },
   "devDependencies": {
     "@djie/eslint-config": "2.1.7",
-    "@djie/utils": "^1.0.37",
+    "@djie/utils": "^1.0.38",
     "@types/node": "^18.11.0",
     "adm-zip": "0.5.14",
     "bumpp": "^8.2.1",
     "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
     "commander": "^9.4.1",
     "copy-paste": "^1.5.3",
     "degit": "^2.8.4",

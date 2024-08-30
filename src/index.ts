@@ -160,7 +160,8 @@ export default async function () {
     .addOption(new Option('-t, --type <图片格式>', '输出格式类型').choices(getSharpFormat()))
     .addOption(new Option('-f, --fit <图片转换模式>', '图片转换模式, 同css object-fit').default('cover').choices(['cover', 'contain', 'fill', 'inside', 'outside']))
     .option('-z, --zip', '是否输出压缩包')
-    .description('图片转换')
+    .option('-i, --info', '是否输出图片信息')
+    .description('图片转换, 图片格式，大小，旋转，重命名，填充模式，输出路径，压缩包等')
     .action((img_path, options) => {
       imgResize(img_path, options)
     })

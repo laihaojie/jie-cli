@@ -6,10 +6,18 @@ import chalk from 'chalk'
 import type { FitEnum, FormatEnum } from 'sharp'
 import sharp from 'sharp'
 import ora from 'ora'
-import { isUrl, isValidFileName, randomStr } from '@djie/utils'
+import { deepClone, formatFileSize, isUrl, isValidFileName, randomStr } from '@djie/utils'
 import AmdZip from 'adm-zip'
+import Table from 'cli-table3'
 import { fromBuffer } from 'file-type'
 
+type ImgMeta = Partial<{
+  width: number
+  height: number
+  format: string
+  address: string
+  size: number
+}>
 interface ImageResizeOptions {
   width: number[]
   height: number[]
@@ -20,10 +28,13 @@ interface ImageResizeOptions {
   fit?: keyof FitEnum | undefined
   ext?: string
   zip?: boolean
+  info?: boolean
+  meta?: ImgMeta
   __isUrl?: boolean
 }
 
 export async function imgResize(image_path: string, options: ImageResizeOptions) {
+  options.meta = {}
   options.ext = options.type
   options.__isUrl = isUrl(image_path)
   const extNames = getSharpFormat()
@@ -43,7 +54,7 @@ export async function imgResize(image_path: string, options: ImageResizeOptions)
       console.log(chalk.red('不支持的文件类型'))
       process.exit(1)
     }
-
+    options.meta.address = image_path
     options.ext = options.ext || fileTypeInfo.ext
 
     const urlObj = new URL(image_path)
@@ -81,7 +92,7 @@ export async function imgResize(image_path: string, options: ImageResizeOptions)
     }
 
     const buffer = fs.readFileSync(inputPath)
-
+    options.meta.address = inputPath
     options.ext = options.ext || ext
 
     await handleImg(buffer, ext === options.ext ? inputPath : replaceFileSuffix(inputPath, options.ext), options)
@@ -92,7 +103,7 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
   const widthList = options.width
   const heightList = options.height
 
-  if (widthList.length === 0 && heightList.length === 0 && !options.name && !options.zip && !options.output && !options.type && !options.rotate && !options.__isUrl) {
+  if (!isHandleImg(options)) {
     console.log(chalk.green('没接收任何指令，跳过图片操作'))
     process.exit(0)
   }
@@ -119,7 +130,11 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
       sharpInstance.rotate(options.rotate)
     }
     const outputBuffer = await sharpInstance.toFormat(options.ext as keyof FormatEnum).toBuffer()
-    generateList.push({ buffer: outputBuffer, output: outputPath })
+    const meta = deepClone(options.meta)
+    if (options.info) {
+      await setMetaByBuffer(outputBuffer, meta)
+    }
+    generateList.push({ buffer: outputBuffer, output: outputPath, meta, info: options.info, generate: isGenerate(options) })
   }
   else {
     const sizeList = widthList.length > heightList.length ? widthList : heightList
@@ -133,7 +148,11 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
       const outputBuffer = await sharpInstance.resize(width, height, { fit: options.fit }).toFormat(options.ext as keyof FormatEnum).toBuffer()
       const outputName = `${options.name ? options.name : path.basename(inputPath, `.${options.ext}`)}-${width || height}x${height || width}.${options.ext}`
       const outputPath = path.join(outputDir, outputName)
-      generateList.push({ buffer: outputBuffer, output: outputPath })
+      const meta = deepClone(options.meta)
+      if (options.info) {
+        await setMetaByBuffer(outputBuffer, meta)
+      }
+      generateList.push({ buffer: outputBuffer, output: outputPath, meta, info: options.info, generate: true })
     }
   }
   generateByOptions(generateList, zipDir)
@@ -142,22 +161,43 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
 interface GenerateOptions {
   buffer: Buffer
   output: string
+  meta: ImgMeta
+  info: boolean
+  generate: boolean
+}
+
+function isAction(options: ImageResizeOptions) {
+  return Boolean(options.width.length !== 0 || options.height.length !== 0 || options.name || options.zip || options.output || options.type || options.rotate || options.__isUrl)
+}
+
+function isHandleImg(options: ImageResizeOptions) {
+  return isAction(options) || options.info
+}
+
+function isGenerate(options: ImageResizeOptions) {
+  return isAction(options)
 }
 
 function generateByOptions(list: GenerateOptions[], zipDir: string) {
   const spinner = ora()
+  const isInfo = list.every(({ info }) => info)
   if (!zipDir) {
-    list.forEach(({ buffer, output }) => {
+    list.forEach(({ buffer, output, generate }) => {
+      if (!generate) return
       const relativeName = path.relative(process.cwd(), output)
       spinner.start(chalk(`生成 ${chalk.bold(relativeName)}`))
       fs.writeFileSync(output, buffer)
       spinner.succeed(chalk.green(`生成 ${chalk.bold(relativeName)}`))
     })
+    if (isInfo) {
+      showInfoByGenerateList(list)
+    }
   }
   else {
     const zip = new AmdZip()
     const outputZipPath = path.join(zipDir, 'img-output.zip')
-    list.forEach(({ buffer, output }) => {
+    list.forEach(({ buffer, output, generate }) => {
+      if (!generate) return
       const fileName = path.basename(output)
       spinner.start(chalk(`添加${chalk.bold(fileName)}到zip`))
       zip.addFile(fileName, buffer)
@@ -168,6 +208,9 @@ function generateByOptions(list: GenerateOptions[], zipDir: string) {
     spinner.start(chalk(`生成 ${chalk.bold(relativeName)}`))
     zip.writeZip(outputZipPath)
     spinner.succeed(chalk.green(`生成 ${chalk.bold(relativeName)}`))
+    if (isInfo) {
+      showInfoByGenerateList(list, outputZipPath)
+    }
   }
 }
 
@@ -181,6 +224,25 @@ function replaceFileSuffix(filePath, newSuffix) {
 
   // 重建路径
   return path.format(parsedPath)
+}
+
+async function setMetaByBuffer(buffer: Buffer, meta: ImgMeta) {
+  const sharpInstance = sharp(buffer)
+  const metadata = await sharpInstance.metadata()
+  meta.width = metadata.width
+  meta.height = metadata.height
+  meta.size = metadata.size
+  meta.format = metadata.format
+}
+
+async function showInfoByGenerateList(list: GenerateOptions[], zipPath?: string) {
+  const head = ['文件名', '大小', '宽高', '格式', '输入地址', '输出地址'].map(i => chalk.bold.green(i))
+  const table = new Table({ head })
+  list.forEach(({ output, meta }) => {
+    table.push([path.basename(output), formatFileSize(meta.size), `${meta.width}x${meta.height}`, meta.format, meta.address, zipPath || output].map(i => chalk.yellow(i)))
+  })
+
+  console.log(table.toString())
 }
 
 export function generatePwaIcon(icon_path: string) {
