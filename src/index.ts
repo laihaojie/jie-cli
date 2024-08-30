@@ -158,7 +158,8 @@ export default async function () {
     .option('-w, --width <width>', '宽度', stringToNumber, [])
     .option('-h, --height <height>', '高度', stringToNumber, [])
     .option('-n, --name <name>', '输出文件名')
-    .addOption(new Option('-t, --type <格式>', '输出格式类型').choices(getSharpFormat()))
+    .addOption(new Option('-t, --type <图片格式>', '输出格式类型').choices(getSharpFormat()))
+    .addOption(new Option('-f, --fit <图片转换模式>', '图片转换模式, 同css object-fit').default('cover').choices(['cover', 'contain', 'fill', 'inside', 'outside']))
     .option('-z, --zip', '是否输出压缩包')
     .description('图片转换')
     .action((img_path, options) => {
@@ -174,6 +175,7 @@ export default async function () {
     .option('-h, --height <高度>', '高度', stringToNumber, [])
     .option('--zip', '是否输出压缩包')
     .addOption(new Option('-t, --type <格式>', '输出格式类型').choices(['jpg', 'png']))
+    .addOption(new Option('-f, --fit <图片转换模式>', '图片转换模式, 同css object-fit').default('cover').choices(['cover', 'contain', 'fill', 'inside', 'outside']))
     .description('测试 命令行解析参数')
     .action((...args) => {
       console.log(args.slice(0, -1))

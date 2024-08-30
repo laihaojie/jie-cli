@@ -3,7 +3,7 @@ import process from 'node:process'
 import path from 'node:path'
 import { Buffer } from 'node:buffer'
 import chalk from 'chalk'
-import type { FormatEnum } from 'sharp'
+import type { FitEnum, FormatEnum } from 'sharp'
 import sharp from 'sharp'
 import ora from 'ora'
 import { isUrl, isValidFileName, randomStr } from '@djie/utils'
@@ -16,6 +16,7 @@ interface ImageResizeOptions {
   name?: string
   output?: string
   type?: string
+  fit?: keyof FitEnum | undefined
   ext?: string
   zip?: boolean
   __isUrl?: boolean
@@ -122,7 +123,7 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
       const width = widthList[i] || null
       const height = heightList[i] || null
       const sharpInstance = sharp(buffer)
-      const outputBuffer = await sharpInstance.resize(width, height).toFormat(options.ext as keyof FormatEnum).toBuffer()
+      const outputBuffer = await sharpInstance.resize(width, height, { fit: options.fit }).toFormat(options.ext as keyof FormatEnum).toBuffer()
       const outputName = `${options.name ? options.name : path.basename(inputPath, `.${options.ext}`)}-${width || height}x${height || width}.${options.ext}`
       const outputPath = path.join(outputDir, outputName)
       generateList.push({ buffer: outputBuffer, output: outputPath })
