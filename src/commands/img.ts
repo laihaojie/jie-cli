@@ -14,6 +14,7 @@ interface ImageResizeOptions {
   width: number[]
   height: number[]
   name?: string
+  rotate?: number
   output?: string
   type?: string
   fit?: keyof FitEnum | undefined
@@ -91,7 +92,7 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
   const widthList = options.width
   const heightList = options.height
 
-  if (widthList.length === 0 && heightList.length === 0 && !options.name && !options.zip && !options.output && !options.type && !options.__isUrl) {
+  if (widthList.length === 0 && heightList.length === 0 && !options.name && !options.zip && !options.output && !options.type && !options.rotate && !options.__isUrl) {
     console.log(chalk.green('没接收任何指令，跳过图片操作'))
     process.exit(0)
   }
@@ -108,12 +109,15 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
   const generateList = [] as GenerateOptions[]
 
   if (widthList.length === 0 && heightList.length === 0) {
-    if (!options.zip && outputDir === path.dirname(inputPath) && (path.basename(inputPath, `.${options.ext}`) === options.name) && !options.__isUrl) {
+    if (!options.zip && outputDir === path.dirname(inputPath) && (path.basename(inputPath, `.${options.ext}`) === options.name) && !options.rotate && !options.__isUrl) {
       console.log(chalk.green('输出的路径和输入的路径一致，跳过图片操作'))
       process.exit(0)
     }
     const outputPath = path.join(outputDir, options.name ? `${options.name}.${options.ext}` : path.basename(inputPath))
     const sharpInstance = sharp(buffer)
+    if (options.rotate) {
+      sharpInstance.rotate(options.rotate)
+    }
     const outputBuffer = await sharpInstance.toFormat(options.ext as keyof FormatEnum).toBuffer()
     generateList.push({ buffer: outputBuffer, output: outputPath })
   }
@@ -123,6 +127,9 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
       const width = widthList[i] || null
       const height = heightList[i] || null
       const sharpInstance = sharp(buffer)
+      if (options.rotate) {
+        sharpInstance.rotate(options.rotate)
+      }
       const outputBuffer = await sharpInstance.resize(width, height, { fit: options.fit }).toFormat(options.ext as keyof FormatEnum).toBuffer()
       const outputName = `${options.name ? options.name : path.basename(inputPath, `.${options.ext}`)}-${width || height}x${height || width}.${options.ext}`
       const outputPath = path.join(outputDir, outputName)
