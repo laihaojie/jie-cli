@@ -1,6 +1,6 @@
 {
   "name": "@djie/cli",
-  "version": "1.0.74",
+  "version": "1.0.75",
   "description": "my cli tool",
   "author": "laihaojie",
   "license": "ISC",
@@ -34,13 +34,13 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "adm-zip": "^0.5.15",
     "sharp": "^0.33.5"
   },
   "devDependencies": {
     "@djie/eslint-config": "2.1.7",
     "@djie/utils": "^1.0.37",
     "@types/node": "^18.11.0",
-    "adm-zip": "^0.5.10",
     "bumpp": "^8.2.1",
     "chalk": "^4.1.2",
     "commander": "^9.4.1",
