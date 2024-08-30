@@ -136,19 +136,17 @@ export default async function () {
     })
 
   function stringToNumber(val: string, prev: number[]) {
-    const num = Number.parseInt(val)
-
-    if (Number.isNaN(num))
+    const numList = val.split(/[,，]/).filter(Boolean).map(Number)
+    if (numList.some(Number.isNaN))
       throw new Error('请输入数字')
 
-    if (num <= 0) {
+    if (numList.some(num => num <= 0))
       throw new Error('请输入正整数')
-    }
 
-    if (prev.includes(num))
+    if (numList.length === 0)
       return prev
 
-    return [...new Set(prev.concat(num))]
+    return [...new Set(prev.concat(numList))]
   }
 
   program
@@ -158,7 +156,7 @@ export default async function () {
     .option('-w, --width <width>', '宽度', stringToNumber, [])
     .option('-h, --height <height>', '高度', stringToNumber, [])
     .option('-n, --name <name>', '输出文件名')
-    .option('-r, --rotate <rotate>', '旋转角度', val => Number.parseInt(val))
+    .option('-r, --rotate <rotate>', '旋转角度', val => Number(val))
     .addOption(new Option('-t, --type <图片格式>', '输出格式类型').choices(getSharpFormat()))
     .addOption(new Option('-f, --fit <图片转换模式>', '图片转换模式, 同css object-fit').default('cover').choices(['cover', 'contain', 'fill', 'inside', 'outside']))
     .option('-z, --zip', '是否输出压缩包')
@@ -174,8 +172,9 @@ export default async function () {
     .option('--debug-server', 'debug')
     .option('-w, --width <宽度>', '宽度', stringToNumber, [])
     .option('-h, --height <高度>', '高度', stringToNumber, [])
-    .option('--zip', '是否输出压缩包')
-    .option('-r, --rotate <rotate>', '旋转角度', val => Number.parseInt(val))
+    // .option('--zip <name>', '是否输出压缩包', val => val || 'zipsx', 'zipsx')
+    .option('-r, --rotate <rotate>', '旋转角度', val => Number(val))
+    .addOption(new Option('-z, --zip <name>', '是否输出压缩包').default('zipsx'))
     .addOption(new Option('-t, --type <格式>', '输出格式类型').choices(['jpg', 'png']))
     .addOption(new Option('-f, --fit <图片转换模式>', '图片转换模式, 同css object-fit').default('cover').choices(['cover', 'contain', 'fill', 'inside', 'outside']))
     .description('测试 命令行解析参数')
