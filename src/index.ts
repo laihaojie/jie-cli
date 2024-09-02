@@ -159,6 +159,16 @@ export default async function () {
     .option('-r, --rotate <rotate>', '旋转角度', val => Number(val))
     .addOption(new Option('-t, --type <图片格式>', '输出格式类型').choices(getSharpFormat()))
     .addOption(new Option('-f, --fit <图片转换模式>', '图片转换模式, 同css object-fit').default('cover').choices(['cover', 'contain', 'fill', 'inside', 'outside']))
+    .option('-q, --quality <质量>', '转换图片质量1-100', (val) => {
+      const quality = Number(val)
+
+      if (Number.isNaN(quality))
+        throw new Error('请输入数字')
+      if (quality < 1 || quality > 100)
+        throw new Error('请输入1-100之间的数字')
+
+      return quality
+    })
     .option('-z, --zip', '是否输出压缩包')
     .option('-i, --info', '是否输出图片信息')
     .description('图片转换, 图片格式，大小，旋转，重命名，填充模式，输出路径，压缩包等')

@@ -25,16 +25,22 @@ interface ImageResizeOptions {
   rotate?: number
   output?: string
   type?: string
+  quality?: number
   fit?: keyof FitEnum | undefined
   ext?: string
   zip?: boolean
   info?: boolean
   meta?: ImgMeta
   __isUrl?: boolean
+  formatOptions?: Record<string, any>
 }
 
 export async function imgResize(image_path: string, options: ImageResizeOptions) {
   options.meta = {}
+  options.formatOptions = {}
+  if (options.quality) {
+    options.formatOptions.quality = options.quality
+  }
   options.ext = options.type
   options.__isUrl = isUrl(image_path)
   const extNames = getSharpFormat()
@@ -129,7 +135,7 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
     if (options.rotate) {
       sharpInstance.rotate(options.rotate)
     }
-    const outputBuffer = await sharpInstance.toFormat(options.ext as keyof FormatEnum).toBuffer()
+    const outputBuffer = await sharpInstance.toFormat(options.ext as keyof FormatEnum, options.formatOptions).toBuffer()
     const meta = deepClone(options.meta)
     if (options.info) {
       await setMetaByBuffer(outputBuffer, meta)
@@ -145,7 +151,7 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
       if (options.rotate) {
         sharpInstance.rotate(options.rotate)
       }
-      const outputBuffer = await sharpInstance.resize(width, height, { fit: options.fit }).toFormat(options.ext as keyof FormatEnum).toBuffer()
+      const outputBuffer = await sharpInstance.resize(width, height, { fit: options.fit }).toFormat(options.ext as keyof FormatEnum, options.formatOptions).toBuffer()
       const outputName = `${options.name ? options.name : path.basename(inputPath, `.${options.ext}`)}-${width || height}x${height || width}.${options.ext}`
       const outputPath = path.join(outputDir, outputName)
       const meta = deepClone(options.meta)
@@ -167,7 +173,7 @@ interface GenerateOptions {
 }
 
 function isAction(options: ImageResizeOptions) {
-  return Boolean(options.width.length !== 0 || options.height.length !== 0 || options.name || options.zip || options.output || options.type || options.rotate || options.__isUrl)
+  return Boolean(options.width.length !== 0 || options.height.length !== 0 || options.name || options.zip || options.output || options.type || options.rotate || options.quality || options.__isUrl)
 }
 
 function isHandleImg(options: ImageResizeOptions) {
