@@ -18,6 +18,8 @@ import { startServer } from './commands/server'
 import { info } from './commands/info'
 import { rb } from './commands/rb'
 import { generatePwaIcon, getSharpFormat, imgResize } from './commands/img'
+import { imgToIco } from './commands/ico'
+import { imgToIcoMini } from './commands/ico_mini'
 
 export default async function () {
   startServer()
@@ -157,9 +159,9 @@ export default async function () {
     .option('-h, --height <height>', '高度', stringToNumber, [])
     .option('-n, --name <name>', '输出文件名')
     .option('-r, --rotate <rotate>', '旋转角度', val => Number(val))
-    .addOption(new Option('-t, --type <图片格式>', '输出格式类型').choices(getSharpFormat()))
-    .addOption(new Option('-f, --fit <图片转换模式>', '图片转换模式, 同css object-fit').default('cover').choices(['cover', 'contain', 'fill', 'inside', 'outside']))
-    .option('-q, --quality <质量>', '转换图片质量1-100', (val) => {
+    .addOption(new Option('-t, --type <type>', '输出格式类型').choices(getSharpFormat()))
+    .addOption(new Option('-f, --fit <fit>', '图片转换模式, 同css object-fit').default('cover').choices(['cover', 'contain', 'fill', 'inside', 'outside']))
+    .option('-q, --quality <quality>', '转换图片质量1-100', (val) => {
       const quality = Number(val)
 
       if (Number.isNaN(quality))
@@ -174,6 +176,18 @@ export default async function () {
     .description('图片转换, 图片格式，大小，旋转，重命名，填充模式，输出路径，压缩包等')
     .action((img_path, options) => {
       imgResize(img_path, options)
+    })
+
+  program
+    .command('ico')
+    .argument('<img_path>', '需要转换的图片路径, 可以是文件路径或者图片URL')
+    .option('-o, --output <output_path>', '输出路径')
+    .option('-s, --size <size>', 'ico尺寸', val => Number(val))
+    .option('-n, --name <name>', '输出文件名')
+    .option('-z, --zip', '是否输出压缩包')
+    .description('ico png 互相转换')
+    .action((img_path, options) => {
+      imgToIcoMini(img_path, options)
     })
 
   program
