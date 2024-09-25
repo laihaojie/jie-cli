@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 import process from 'node:process'
 import chalk from 'chalk'
 import { author, homepage, name, version } from '../../package.json'

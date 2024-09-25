@@ -17,8 +17,7 @@ import { killPort } from './commands/kill'
 import { startServer } from './commands/server'
 import { info } from './commands/info'
 import { rb } from './commands/rb'
-import { generatePwaIcon, getSharpFormat, imgResize } from './commands/img'
-import { imgToIco } from './commands/ico'
+import { getSharpFormat, imgResize } from './commands/img'
 import { imgToIcoMini } from './commands/ico_mini'
 
 export default async function () {
