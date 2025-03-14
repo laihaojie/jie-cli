@@ -3,7 +3,7 @@ import process from 'node:process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { isUrl, isValidFileName, randomStr } from '@djie/utils'
-import { fromBuffer } from 'file-type'
+import { fileTypeFromBuffer } from 'file-type'
 import chalk from 'chalk'
 
 type ImgMeta = Partial<{
@@ -30,7 +30,7 @@ export async function imgToIco(image_path: string, options: ImageToIcoOptions) {
     // image_path = 'https://img0.baidu.com/it/u=652041139,3023980007&fm=253&fmt=auto&app=138&f=JPG?w=460&h=649'
 
     const buffer = await (await fetch(image_path)).arrayBuffer()
-    const fileTypeInfo = await fromBuffer(Buffer.from(buffer))
+    const fileTypeInfo = await fileTypeFromBuffer(Buffer.from(buffer))
     if (!fileTypeInfo) {
       console.log(chalk.red('无法获取文件类型'))
       process.exit(1)
