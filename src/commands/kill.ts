@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { runCmdGetRes } from '../utils/run'
 import { localServer } from '../config'
 
-export function killPort([port]: any[]) {
+export function killPort(port: any) {
   if (port === 'server') {
     const urlObj = new URL(localServer)
     port = urlObj.port

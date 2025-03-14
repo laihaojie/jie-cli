@@ -54,9 +54,10 @@ export default async function () {
 
   program
     .command('push')
+    .argument('[message...]', '提交信息')
     .description('提交代码')
-    .action(() => {
-      gitPushAll(program.args.slice(1).join(' '))
+    .action((message) => {
+      gitPushAll(message.join(' '))
     })
 
   program
@@ -86,21 +87,24 @@ export default async function () {
   program
     .command('clean')
     .description('清除文件')
+    .argument('[files...]', '文件列表')
     .option('-a, --all', '清除所有')
-    .action((ops) => {
+    .action((files, ops) => {
       if (ops.all) {
         const files = fs.readdirSync(process.cwd())
         clean(files)
         return
       }
-      clean(program.args.slice(1))
+      clean(files)
     })
 
   program
     .command('random')
+    .argument('<type>', '类型')
+    .argument('[length]', '长度')
     .description('生成随机字符串或数字')
-    .action(() => {
-      random(program.args.slice(1))
+    .action((...args) => {
+      random(args)
     })
 
   program
@@ -112,9 +116,10 @@ export default async function () {
 
   program
     .command('kill')
+    .argument('<port>', '端口号')
     .description('杀死端口')
-    .action(() => {
-      killPort(program.args.slice(1))
+    .action((port) => {
+      killPort(port)
     })
 
   // rb run
@@ -122,10 +127,11 @@ export default async function () {
   // rb get
   program
     .command('rb')
-    .argument('<action>')
+    .argument('<action>', '操作')
+    .argument('[args...]', '参数')
     .description('日报')
-    .action((action) => {
-      rb(action, program.args.slice(2))
+    .action((action, args) => {
+      rb(action, args)
     })
 
   program
