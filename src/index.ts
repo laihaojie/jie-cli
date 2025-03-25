@@ -1,24 +1,24 @@
 import fs from 'node:fs'
 import process from 'node:process'
-import { Command, Option } from 'commander'
 import chalk from 'chalk'
+import { Command, Option } from 'commander'
 import { version } from '../package.json'
+import { clean } from './commands/clean'
+import { createProject } from './commands/create'
+import { eslint } from './commands/eslint'
+import { gitPushAll, openGitRepoByBrowser } from './commands/git'
+import { imgToIcoMini } from './commands/ico_mini'
+import { getSharpFormat, imgResize } from './commands/img'
+import { info } from './commands/info'
+import { killPort } from './commands/kill'
+import { random } from './commands/random'
+import { rb } from './commands/rb'
+import { startServer } from './commands/server'
+import { update } from './commands/update'
 import { checkVersion } from './utils/checkVersion'
 import { openInBrowser } from './utils/open'
 import { Platform } from './utils/platform'
-import { runCmd } from './utils/run'
-import { clean } from './commands/clean'
-import { gitPushAll, openGitRepoByBrowser } from './commands/git'
-import { random } from './commands/random'
-import { update } from './commands/update'
-import { createProject } from './commands/create'
-import { eslint } from './commands/eslint'
-import { killPort } from './commands/kill'
-import { startServer } from './commands/server'
-import { info } from './commands/info'
-import { rb } from './commands/rb'
-import { getSharpFormat, imgResize } from './commands/img'
-import { imgToIcoMini } from './commands/ico_mini'
+import { runCmdSync } from './utils/run'
 
 export default async function () {
   startServer()
@@ -65,9 +65,9 @@ export default async function () {
     .description('打开当前文件夹')
     .action(() => {
       if (Platform.isWin)
-        runCmd('explorer .')
+        runCmdSync('explorer .')
       else
-        runCmd('open .')
+        runCmdSync('open .')
     })
 
   program

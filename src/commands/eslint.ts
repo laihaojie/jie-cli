@@ -3,7 +3,7 @@ import path from 'node:path'
 import process from 'node:process'
 import chalk from 'chalk'
 import inquirer from 'inquirer'
-import { runCmd } from '../utils/run'
+import { runCmdSync } from '../utils/run'
 
 export async function eslint() {
   const rootPath = process.cwd()
@@ -61,7 +61,7 @@ export async function eslint() {
     installCmd = `npm install -D eslint@latest ${packageName}@latest`
 
   console.log(chalk.green.bold(`开始执行 ${installCmd}`))
-  runCmd(installCmd)
+  runCmdSync(installCmd)
 
   // 生成 eslint.config.js
   const eslintConfigPath = path.join(rootPath, 'eslint.config.js')

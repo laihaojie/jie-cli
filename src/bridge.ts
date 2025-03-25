@@ -1,7 +1,9 @@
-import http from 'node:http'
 import fs from 'node:fs'
+import http from 'node:http'
 import process from 'node:process'
 import { runCmdGetRes } from './utils/run'
+// import { WebSocketServer } from 'ws'
+// import * as pty from 'node-pty'
 
 // Create an HTTP server
 const server = http.createServer((req, res) => {
@@ -21,6 +23,32 @@ const server = http.createServer((req, res) => {
   if (method === 'OPTIONS')
     res.end()
 })
+
+// const wss = new WebSocketServer({ server });
+
+// wss.on('connection', (ws) => {
+//   // 创建伪终端
+//   const term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
+//     name: 'xterm-color',
+//     cols: 80,
+//     rows: 24,
+//     cwd: process.env.HOME,
+//     env: process.env
+//   });
+
+//   // 终端数据 -> 发送给前端
+//   term.onData(data => ws.send(data));
+
+//   // 前端消息 -> 写入终端
+//   ws.on('message', (data) => {
+//     term.write(data.toString());
+//   });
+
+//   // 关闭处理
+//   ws.on('close', () => {
+//     term.kill();
+//   });
+// });
 
 class R {
   static success(res, data) {

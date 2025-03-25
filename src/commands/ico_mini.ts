@@ -1,10 +1,10 @@
 import { Buffer } from 'node:buffer'
-import process from 'node:process'
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { isUrl, isValidFileName, randomStr } from '@djie/utils'
-import { fileTypeFromBuffer } from 'file-type'
 import chalk from 'chalk'
+import { fileTypeFromBuffer } from 'file-type'
 import sharp from 'sharp'
 import ico from 'sharp-ico'
 

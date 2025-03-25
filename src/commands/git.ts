@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process'
 import process from 'node:process'
 import chalk from 'chalk'
 import { openInBrowser } from '../utils/open'
-import { runCmd } from '../utils/run'
+import { runCmdSync } from '../utils/run'
 
 export async function gitPush(message) {
   if (!message) {
@@ -30,9 +30,9 @@ export function openGitRepoByBrowser() {
 }
 
 export function checkGitStats() {
-  runCmd('git config core.hooksPath .gitHooks')
+  runCmdSync('git config core.hooksPath .gitHooks')
 
-  runCmd('git fetch')
+  runCmdSync('git fetch')
 
   const res = execSync('git status', { stdio: 'pipe' }).toString().trim()
   const currentBranch = res.match(/On branch (.*)/)[1]

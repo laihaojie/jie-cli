@@ -1,7 +1,7 @@
 import process from 'node:process'
 import chalk from 'chalk'
-import { runCmdGetRes } from '../utils/run'
 import { localServer } from '../config'
+import { runCmdGetRes } from '../utils/run'
 
 export function killPort(port: any) {
   if (port === 'server') {

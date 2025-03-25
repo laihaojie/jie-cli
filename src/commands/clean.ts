@@ -44,20 +44,23 @@ export function clean(args: string[]): any {
 //   }
 // }
 async function cleanByPath(...args: string[]) {
-  const spinner = ora()
-
+  args = args.filter(fs.existsSync)
   for (const value of args) {
-    if (!fs.existsSync(value))
-      continue
-
     if (value.startsWith('/') || value.startsWith('\\')) {
       console.log(chalk.red(chalk.bold('禁止清除根目录')))
       return
     }
 
-    spinner.start(chalk(`清除 ${chalk.bold(value)}`))
     // await rimraf(value)
-    runCmd(`rm -rf ${value}`)
-    spinner.succeed(chalk.green(`清除 ${chalk.bold(value)}`))
+    const startStr = chalk(`清除 ${chalk.bold(value)}`)
+    const spinner = ora(startStr).start()
+    try {
+      await runCmd(`rm -rf ${value}`) // 等待当前任务完成
+      const endStr = chalk.green(`清除 ${chalk.bold(value)} 成功`)
+      spinner.succeed(endStr)
+    }
+    catch {
+      spinner.fail(chalk.red(`清除 ${chalk.bold(value)} 失败`))
+    }
   }
 }

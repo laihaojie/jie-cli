@@ -1,15 +1,15 @@
-import fs from 'node:fs'
-import process from 'node:process'
-import path from 'node:path'
-import { Buffer } from 'node:buffer'
-import chalk from 'chalk'
 import type { FitEnum, FormatEnum } from 'sharp'
-import sharp from 'sharp'
-import ora from 'ora'
+import { Buffer } from 'node:buffer'
+import fs from 'node:fs'
+import path from 'node:path'
+import process from 'node:process'
 import { deepClone, formatFileSize, isUrl, isValidFileName, randomStr } from '@djie/utils'
 import AmdZip from 'adm-zip'
+import chalk from 'chalk'
 import Table from 'cli-table3'
 import { fileTypeFromBuffer } from 'file-type'
+import ora from 'ora'
+import sharp from 'sharp'
 
 type ImgMeta = Partial<{
   width: number
