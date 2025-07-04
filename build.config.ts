@@ -14,7 +14,6 @@ export default defineBuildConfig({
   },
   hooks: {
     'rollup:options': (ctx, options) => {
-      // @ts-expect-error xxx
       options.plugins.push(
         {
           name: 'replace_string_decoder',

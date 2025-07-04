@@ -19,6 +19,7 @@ import { checkVersion } from './utils/checkVersion'
 import { openInBrowser } from './utils/open'
 import { Platform } from './utils/platform'
 import { runCmdSync } from './utils/run'
+import { findLargeFiles } from './commands/seek'
 
 export default async function () {
   startServer()
@@ -193,6 +194,19 @@ export default async function () {
     .description('ico png 互相转换')
     .action((img_path, options) => {
       imgToIcoMini(img_path, options)
+    })
+
+  program
+    .command('seek')
+    .argument('[path]', '需要查找的路径')
+    .option('-s, --size <size>', '过滤的文件大小', val => Number(val), 10)
+    .option('-u, --unit <unit>', '过滤的文件大小单位', val => val || 'mb', 'mb')
+    .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', (val) => val.split(',').map(dir => dir.trim()), [])
+    .option('-f, --exclude-files <files>', '排除的文件，多个用逗号分隔', (val) => val.split(',').map(file => file.trim()), [])
+    .option('-m, --max-show <max>', '最大显示数量', val => Number(val), 10)
+    .description('查找指定文件夹下大于指定大小的文件')
+    .action((path, options) => {
+      findLargeFiles(path, options.size, options.unit, options.excludeDirs, options.excludeFiles, options.maxShow)
     })
 
   program
