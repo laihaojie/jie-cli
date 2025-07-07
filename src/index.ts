@@ -20,6 +20,7 @@ import { openInBrowser } from './utils/open'
 import { Platform } from './utils/platform'
 import { runCmdSync } from './utils/run'
 import { findLargeFiles } from './commands/seek'
+import { zipFolder } from './commands/zip'
 
 export default async function () {
   startServer()
@@ -198,7 +199,7 @@ export default async function () {
 
   program
     .command('seek')
-    .argument('[path]', '需要查找的路径')
+    .argument('[path]', '需要查找的路径, 不写默认为当前目录')
     .option('-s, --size <size>', '过滤的文件大小', val => Number(val), 10)
     .option('-u, --unit <unit>', '过滤的文件大小单位', val => val || 'mb', 'mb')
     .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', (val) => val.split(',').map(dir => dir.trim()), [])
@@ -208,6 +209,19 @@ export default async function () {
     .action((path, options) => {
       findLargeFiles(path, options.size, options.unit, options.excludeDirs, options.excludeFiles, options.maxShow)
     })
+
+  program
+    .command('zip')
+    .argument('[path]', '需要压缩的路径，不写默认为当前目录')
+    .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', (val) => val.split(',').map(dir => dir.trim()), [])
+    .option('-f, --exclude-files <files>', '排除的文件，多个用逗号分隔', (val) => val.split(',').map(file => file.trim()), [])
+    .option('-o, --output <output_path>', '输出路径，默认为当前目录下的同名.zip文件')
+    .description('压缩指定文件夹为 ZIP 文件，支持过滤文件夹和文件')
+    .action((path, options) => {
+      // console.log(options)
+      zipFolder(path, options.output, options.excludeDirs, options.excludeFiles)
+    })
+
 
   program
     .command('test')
