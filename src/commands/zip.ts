@@ -25,7 +25,7 @@ export async function zipFolder(inputPath = '.', outputPath, excludeDirs = [], e
     if (!stats.isDirectory()) {
       throw new Error('输入路径必须是一个文件夹');
     }
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(`无效的输入路径: ${error.message}`);
   }
 
@@ -87,7 +87,7 @@ export async function zipFolder(inputPath = '.', outputPath, excludeDirs = [], e
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(chalk.red(`无法统计 ${dir} 中的文件: ${error.message}`));
     }
   }
@@ -129,23 +129,38 @@ export async function zipFolder(inputPath = '.', outputPath, excludeDirs = [], e
    * @param {string} dir - 当前目录路径
    * @param {string} zipPath - ZIP 文件中的相对路径
    */
-  async function addToArchive(dir, zipPath) {
-    try {
+  async function addToArchive(rootDir, rootZipPath) {
+    const stack = [{ dir: rootDir, zipPath: rootZipPath }];
+
+    while (stack.length > 0) {
+      const { dir, zipPath } = stack.pop();
       const dirName = path.basename(dir);
+
       if (defaultExcludeDirs.some(pattern => minimatch(dirName, pattern))) {
-        return;
+        continue;
       }
 
-      const files = await fs.readdir(dir, { withFileTypes: true });
+      let files;
+      try {
+        files = await fs.readdir(dir, { withFileTypes: true });
+      } catch (error: any) {
+        console.error(chalk.red(`无法读取目录 ${dir}: ${error.message}`));
+        continue;
+      }
 
       for (const file of files) {
         const fullPath = path.join(dir, file.name);
-        const relativePath = path.join(zipPath, file.name); // 使用 path.join 保持 ZIP 内部路径一致
-        const stats = await fs.lstat(fullPath).catch(() => null);
-        if (!stats) continue; // 跳过无法访问的文件/目录
+        const relativePath = path.join(zipPath, file.name);
+
+        let stats;
+        try {
+          stats = await fs.lstat(fullPath);
+        } catch {
+          continue; // 无法访问就跳过
+        }
 
         if (stats.isDirectory() && !stats.isSymbolicLink()) {
-          await addToArchive(fullPath, relativePath);
+          stack.push({ dir: fullPath, zipPath: relativePath });
         } else if (stats.isFile()) {
           if (defaultExcludeFiles.some(pattern => minimatch(file.name, pattern))) {
             continue;
@@ -153,13 +168,11 @@ export async function zipFolder(inputPath = '.', outputPath, excludeDirs = [], e
 
           try {
             archive.file(fullPath, { name: relativePath });
-          } catch (error) {
+          } catch (error: any) {
             console.error(chalk.red(`无法添加文件 ${fullPath}: ${error.message}`));
           }
         }
       }
-    } catch (error) {
-      console.error(chalk.red(`无法读取目录 ${dir}: ${error.message}`));
     }
   }
 
@@ -169,7 +182,7 @@ export async function zipFolder(inputPath = '.', outputPath, excludeDirs = [], e
     await addToArchive(absoluteInputPath, '');
     await archive.finalize();
     return await promise;
-  } catch (error) {
+  } catch (error: any) {
     throw new Error(`压缩失败: ${error.message}`);
   }
 }
