@@ -4,6 +4,16 @@ import chalk from 'chalk'
 import Table from 'cli-table3'
 import { minimatch } from 'minimatch'
 
+interface FindLargeFilesOptions {
+  startPath?: string;
+  size?: number;
+  unit?: 'kb' | 'mb' | 'gb';
+  excludeDirs?: string[];
+  excludeFiles?: string[];
+  maxShow?: number;
+  isAll?: boolean; // 是否显示所有文件
+}
+
 /**
  * 查找指定文件夹下大于指定大小的文件
  * @param {string} [startPath='.'] - 起始文件夹路径，默认为当前文件夹
@@ -11,16 +21,29 @@ import { minimatch } from 'minimatch'
  * @param {string} [unit='mb'] - 单位（'kb', 'mb', 'gb'），默认为'mb'
  * @returns {Promise<Array<{path: string, size: number, unit: string}>>} - 大于指定大小的文件列表
  */
-export async function findLargeFiles(startPath = '.', size = 10, unit = 'mb', excludeDirs = [], excludeFiles = [], maxShow = 10) {
-  const defaultExcludeDirs = ['node_modules', '.git']
+export async function findLargeFiles(options: FindLargeFilesOptions = {}) {
+  let startPath = options.startPath || '.'
+  let size = options.size || 10
+  let unit = options.unit || 'mb'
+  let excludeDirs = options.excludeDirs || []
+  let excludeFiles = options.excludeFiles || []
+  let maxShow = options.maxShow || 10
+  let isAll = options.isAll || false
+
+  let defaultExcludeDirs = ['node_modules', '.git']
   if (excludeDirs && Array.isArray(excludeDirs) && excludeDirs.length > 0) {
     // 如果传入了排除目录，则将其添加到默认排除列表中
     defaultExcludeDirs.push(...excludeDirs);
   }
-  const defaultExcludeFiles = ['.DS_Store', 'Thumbs.db', 'desktop.ini']
+  let defaultExcludeFiles = ['.DS_Store', 'Thumbs.db', 'desktop.ini']
   if (excludeFiles && Array.isArray(excludeFiles) && excludeFiles.length > 0) {
     // 如果传入了排除文件，则将其添加到默认排除列表中
     defaultExcludeFiles.push(...excludeFiles);
+  }
+  if (isAll) {
+    // 如果 isAll 为 true，则不排除任何目录和文件
+    defaultExcludeDirs = [];
+    defaultExcludeFiles = [];
   }
   // 定义单位转换因子
   const unitFactors = {

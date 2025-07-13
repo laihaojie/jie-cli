@@ -5,6 +5,14 @@ import archiver from 'archiver';
 import { minimatch } from 'minimatch'
 import chalk from 'chalk';
 
+interface ZipOptions {
+  inputPath?: string;
+  outputPath?: string;
+  excludeDirs?: string[];
+  excludeFiles?: string[];
+  isAll?: boolean; // 是否显示所有文件
+}
+
 /**
  * 压缩指定文件夹为 ZIP 文件，支持过滤文件夹和文件，并显示进度
  * @param {string} [inputPath='.'] - 输入文件夹路径，默认为当前文件夹
@@ -13,10 +21,21 @@ import chalk from 'chalk';
  * @param {string[]} [excludeFiles=[]] - 要排除的文件模式（支持通配符）
  * @returns {Promise<string>} - 压缩完成后返回完成消息
  */
-export async function zipFolder(inputPath = '.', outputPath, excludeDirs = [], excludeFiles = []) {
+export async function zipFolder(options: ZipOptions = {}) {
+  let inputPath = options.inputPath || '.'
+  let outputPath = options.outputPath
+  let excludeDirs = options.excludeDirs || []
+  let excludeFiles = options.excludeFiles || []
+  let isAll = options.isAll || false;
+
   // 默认排除的文件夹和文件
-  const defaultExcludeDirs = ['node_modules', '.git', ...(Array.isArray(excludeDirs) ? excludeDirs : [])];
-  const defaultExcludeFiles = ['.DS_Store', 'Thumbs.db', 'desktop.ini', '*.log', '*.tmp', ...(Array.isArray(excludeFiles) ? excludeFiles : [])];
+  let defaultExcludeDirs = ['node_modules', '.git', ...(Array.isArray(excludeDirs) ? excludeDirs : [])];
+  let defaultExcludeFiles = ['.DS_Store', 'Thumbs.db', 'desktop.ini', '*.log', '*.tmp', ...(Array.isArray(excludeFiles) ? excludeFiles : [])];
+  if (isAll) {
+    // 如果 isAll 为 true，则不排除任何目录和文件
+    defaultExcludeDirs = [];
+    defaultExcludeFiles = [];
+  }
 
   // 确保输入路径是文件夹
   const absoluteInputPath = path.resolve(inputPath);

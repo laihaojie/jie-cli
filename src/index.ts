@@ -205,9 +205,18 @@ export default async function () {
     .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', (val) => val.split(',').map(dir => dir.trim()), [])
     .option('-f, --exclude-files <files>', '排除的文件，多个用逗号分隔', (val) => val.split(',').map(file => file.trim()), [])
     .option('-m, --max-show <max>', '最大显示数量', val => Number(val), 10)
+    .option('-a, --is-all', '是否显示所有文件，不排除任何目录和文件')
     .description('查找指定文件夹下大于指定大小的文件')
     .action((path, options) => {
-      findLargeFiles(path, options.size, options.unit, options.excludeDirs, options.excludeFiles, options.maxShow)
+      findLargeFiles({
+        startPath: path,
+        size: options.size,
+        unit: options.unit,
+        excludeDirs: options.excludeDirs,
+        excludeFiles: options.excludeFiles,
+        maxShow: options.maxShow,
+        isAll: options.isAll, // 是否显示所有文件
+      })
     })
 
   program
@@ -216,10 +225,16 @@ export default async function () {
     .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', (val) => val.split(',').map(dir => dir.trim()), [])
     .option('-f, --exclude-files <files>', '排除的文件，多个用逗号分隔', (val) => val.split(',').map(file => file.trim()), [])
     .option('-o, --output <output_path>', '输出路径，默认为当前目录下的同名.zip文件')
+    .option('-a, --is-all', '是否显示所有文件，不排除任何目录和文件')
     .description('压缩指定文件夹为 ZIP 文件，支持过滤文件夹和文件')
     .action((path, options) => {
-      // console.log(options)
-      zipFolder(path, options.output, options.excludeDirs, options.excludeFiles)
+      zipFolder({
+        inputPath: path,
+        outputPath: options.output,
+        excludeDirs: options.excludeDirs,
+        excludeFiles: options.excludeFiles,
+        isAll: options.isAll
+      })
     })
 
 
