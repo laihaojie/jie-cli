@@ -11,6 +11,7 @@ import { imgToIcoMini } from './commands/ico_mini'
 import { getSharpFormat, imgResize } from './commands/img'
 import { info } from './commands/info'
 import { killPort } from './commands/kill'
+import { openAppByKeyword } from './commands/open'
 import { random } from './commands/random'
 import { rb } from './commands/rb'
 import { findLargeFiles } from './commands/seek'
@@ -84,6 +85,14 @@ export default async function () {
     .description('打开阿杰的文档')
     .action(() => {
       openInBrowser('https://docs.laihaojie.com/')
+    })
+
+  program
+    .command('open')
+    .argument('[keyword]', '关键词')
+    .description('打开常用程序')
+    .action(async (keyword) => {
+      await openAppByKeyword(keyword)
     })
 
   program
