@@ -13,14 +13,14 @@ import { info } from './commands/info'
 import { killPort } from './commands/kill'
 import { random } from './commands/random'
 import { rb } from './commands/rb'
+import { findLargeFiles } from './commands/seek'
 import { startServer } from './commands/server'
 import { update } from './commands/update'
+import { zipFolder } from './commands/zip'
 import { checkVersion } from './utils/checkVersion'
 import { openInBrowser } from './utils/open'
 import { Platform } from './utils/platform'
 import { runCmdSync } from './utils/run'
-import { findLargeFiles } from './commands/seek'
-import { zipFolder } from './commands/zip'
 
 export default async function () {
   startServer()
@@ -202,8 +202,8 @@ export default async function () {
     .argument('[path]', '需要查找的路径, 不写默认为当前目录')
     .option('-s, --size <size>', '过滤的文件大小', val => Number(val), 10)
     .option('-u, --unit <unit>', '过滤的文件大小单位', val => val || 'mb', 'mb')
-    .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', (val) => val.split(',').map(dir => dir.trim()), [])
-    .option('-f, --exclude-files <files>', '排除的文件，多个用逗号分隔', (val) => val.split(',').map(file => file.trim()), [])
+    .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', val => val.split(',').map(dir => dir.trim()), [])
+    .option('-f, --exclude-files <files>', '排除的文件，多个用逗号分隔', val => val.split(',').map(file => file.trim()), [])
     .option('-m, --max-show <max>', '最大显示数量', val => Number(val), 10)
     .option('-a, --is-all', '是否显示所有文件，不排除任何目录和文件')
     .description('查找指定文件夹下大于指定大小的文件')
@@ -222,8 +222,8 @@ export default async function () {
   program
     .command('zip')
     .argument('[path]', '需要压缩的路径，不写默认为当前目录')
-    .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', (val) => val.split(',').map(dir => dir.trim()), [])
-    .option('-f, --exclude-files <files>', '排除的文件，多个用逗号分隔', (val) => val.split(',').map(file => file.trim()), [])
+    .option('-d, --exclude-dirs <dirs>', '排除的目录，多个用逗号分隔', val => val.split(',').map(dir => dir.trim()), [])
+    .option('-f, --exclude-files <files>', '排除的文件，多个用逗号分隔', val => val.split(',').map(file => file.trim()), [])
     .option('-o, --output <output_path>', '输出路径，默认为当前目录下的同名.zip文件')
     .option('-a, --is-all', '是否显示所有文件，不排除任何目录和文件')
     .description('压缩指定文件夹为 ZIP 文件，支持过滤文件夹和文件')
@@ -233,10 +233,9 @@ export default async function () {
         outputPath: options.output,
         excludeDirs: options.excludeDirs,
         excludeFiles: options.excludeFiles,
-        isAll: options.isAll
+        isAll: options.isAll,
       })
     })
-
 
   program
     .command('test')
@@ -273,4 +272,5 @@ export default async function () {
 // 捕获全局异常
 process.on('uncaughtException', (err) => {
   console.error(chalk.red('异常信息：', err.message))
+  process.exit(1)
 })

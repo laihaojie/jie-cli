@@ -4,7 +4,7 @@ import process from 'node:process'
 import chalk from 'chalk'
 import { Platform } from './platform'
 
-export function getGitBashPath(): string[] {
+export function getGitBashPath(): string {
   const gitDirs: Set<string> = new Set()
 
   // Look for git.exe on the PATH and use that if found. git.exe is located at

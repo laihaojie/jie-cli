@@ -33,7 +33,10 @@ export async function imgToIcoMini(image_path: string, options: ImageToIcoOption
     // image_path = 'https://g.lingman.tech/app/lmapp/dev/uploadfiles/20230514/H6jJyPJ4Di5sBQRzm4zj8MWeiTtT6cMj.png'
     // image_path = 'https://img0.baidu.com/it/u=652041139,3023980007&fm=253&fmt=auto&app=138&f=JPG?w=460&h=649'
 
-    const buffer = await (await fetch(image_path)).arrayBuffer()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30000)
+    const buffer = await (await fetch(image_path, { signal: controller.signal })).arrayBuffer()
+    clearTimeout(timeout)
     const fileTypeInfo = await fileTypeFromBuffer(Buffer.from(buffer))
     if (!fileTypeInfo) {
       console.log(chalk.red('无法获取文件类型'))
@@ -107,8 +110,13 @@ async function handleIco(buffer, inputPath, options: ImageToIcoOptions) {
     await ico.sharpsToIco([sharp(pngBuffer)], outputPath, { sizes: [options.size], resizeOptions: {} })
   }
   else {
-    ico.sharpsFromIco(buffer, {}, true).forEach((icon) => {
-      icon.image.toFile(outputPath)
-    })
+    const icons = ico.sharpsFromIco(buffer, {}, true)
+    for (let i = 0; i < icons.length; i++) {
+      const icon = icons[i]
+      const finalOutputPath = icons.length > 1
+        ? path.join(outputDir, `${path.basename(outputName, `.${options.type}`)}-${icon.width}x${icon.height}.${options.type}`)
+        : outputPath
+      await icon.image.toFile(finalOutputPath)
+    }
   }
 }

@@ -1,5 +1,5 @@
 /* eslint-disable regexp/no-misleading-capturing-group */
-import { execSync } from 'node:child_process'
+import { execFileSync, execSync } from 'node:child_process'
 import process from 'node:process'
 import chalk from 'chalk'
 import { openInBrowser } from '../utils/open'
@@ -12,7 +12,7 @@ export async function gitPush(message) {
   }
   try {
     execSync('git add .', { stdio: 'inherit' })
-    execSync(`git commit -m "${message}"`, { stdio: 'inherit' })
+    execFileSync('git', ['commit', '-m', message], { stdio: 'inherit' })
     execSync('git push', { stdio: 'inherit' })
   }
   catch (err) {
@@ -24,30 +24,31 @@ export async function gitPush(message) {
 export function openGitRepoByBrowser() {
   const res = execSync('git remote -v', { stdio: 'pipe' }).toString().trim()
   // eslint-disable-next-line regexp/no-super-linear-backtracking
-  const url = res.match(/origin\s+(.*)\s+\(fetch\)/)[1]
-  if (url)
-    openInBrowser(url)
+  const match = res.match(/origin\s+(.*)\s+\(fetch\)/)
+  if (match?.[1])
+    openInBrowser(match[1])
 }
 
-export function checkGitStats() {
+export function checkGitStats(): boolean {
   runCmdSync('git config core.hooksPath .gitHooks')
 
   runCmdSync('git fetch')
 
   const res = execSync('git status', { stdio: 'pipe' }).toString().trim()
-  const currentBranch = res.match(/On branch (.*)/)[1]
+  const branchMatch = res.match(/On branch (.*)/)
+  const currentBranch = branchMatch?.[1] || 'unknown'
 
-  const isPull = res.match(/Your branch is behind '.*' by (\d+) commit/) || [0, 0]
-  const isPush = res.match(/Your branch is ahead of '.*' by (\d+) commit/) || [0, 0]
-  const pullCountNum = +isPull[1]
-  const pushCountNum = +isPush[1]
+  const isPull = res.match(/Your branch is behind '.*' by (\d+) commit/)
+  const isPush = res.match(/Your branch is ahead of '.*' by (\d+) commit/)
+  const pullCountNum = isPull ? +isPull[1] : 0
+  const pushCountNum = isPush ? +isPush[1] : 0
 
-  if (isPull[0] && pullCountNum > 0) {
+  if (pullCountNum > 0) {
     console.error(`当前分支 ${chalk.bold.yellow(currentBranch)} 距离远程分支 ${chalk.bold.yellow(currentBranch)} 有 ${chalk.bold.yellow(pullCountNum)} 个拉取, 请先执行 ${chalk.bold.yellow('git pull')}`)
     process.exit(1)
   }
 
-  if (isPush[0] && pushCountNum > 0) {
+  if (pushCountNum > 0) {
     console.error(`当前分支 ${chalk.bold.yellow(currentBranch)} 距离远程分支 ${chalk.bold.yellow(currentBranch)} 有 ${chalk.bold.yellow(pushCountNum)} 个提交, 请先执行 ${chalk.bold.yellow('git push')}`)
     process.exit(1)
   }
@@ -56,7 +57,6 @@ export function checkGitStats() {
 }
 
 export function gitPushAll(message) {
-  if (checkGitStats())
-    return
+  checkGitStats()
   gitPush(message)
 }

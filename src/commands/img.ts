@@ -49,7 +49,10 @@ export async function imgResize(image_path: string, options: ImageResizeOptions)
     // image_path = 'https://g.lingman.tech/app/lmapp/dev/uploadfiles/20230514/H6jJyPJ4Di5sBQRzm4zj8MWeiTtT6cMj.png'
     // image_path = 'https://img0.baidu.com/it/u=652041139,3023980007&fm=253&fmt=auto&app=138&f=JPG?w=460&h=649'
 
-    const buffer = await (await fetch(image_path)).arrayBuffer()
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30000)
+    const buffer = await (await fetch(image_path, { signal: controller.signal })).arrayBuffer()
+    clearTimeout(timeout)
     const fileTypeInfo = await fileTypeFromBuffer(Buffer.from(buffer))
     if (!fileTypeInfo) {
       console.log(chalk.red('无法获取文件类型'))
@@ -131,9 +134,9 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
       process.exit(0)
     }
     const outputPath = path.join(outputDir, options.name ? `${options.name}.${options.ext}` : path.basename(inputPath))
-    const sharpInstance = sharp(buffer)
+    let sharpInstance = sharp(buffer)
     if (options.rotate) {
-      sharpInstance.rotate(options.rotate)
+      sharpInstance = sharpInstance.rotate(options.rotate)
     }
     const outputBuffer = await sharpInstance.toFormat(options.ext as keyof FormatEnum, options.formatOptions).toBuffer()
     const meta = deepClone(options.meta)
@@ -147,9 +150,9 @@ async function handleImg(buffer: Buffer, inputPath: string, options: ImageResize
     for (let i = 0; i < sizeList.length; i++) {
       const width = widthList[i] || null
       const height = heightList[i] || null
-      const sharpInstance = sharp(buffer)
+      let sharpInstance = sharp(buffer)
       if (options.rotate) {
-        sharpInstance.rotate(options.rotate)
+        sharpInstance = sharpInstance.rotate(options.rotate)
       }
       const outputBuffer = await sharpInstance.resize(width, height, { fit: options.fit }).toFormat(options.ext as keyof FormatEnum, options.formatOptions).toBuffer()
       const outputName = `${options.name ? options.name : path.basename(inputPath, `.${options.ext}`)}-${width || height}x${height || width}.${options.ext}`
@@ -251,7 +254,7 @@ async function showInfoByGenerateList(list: GenerateOptions[], zipPath?: string)
   console.log(table.toString())
 }
 
-export function generatePwaIcon(icon_path: string) {
+export async function generatePwaIcon(icon_path: string) {
   const inputPath = path.join(process.cwd(), icon_path)
   const outputDir = path.resolve(inputPath, '..')
   // 判断icon_path是不是一个文件
@@ -275,22 +278,21 @@ export function generatePwaIcon(icon_path: string) {
 
   const sizeList = [192, 512]
   const spinner = ora()
-  sizeList.forEach((size) => {
+  for (const size of sizeList) {
     const outputName = `icon-${size}x${size}.png`
     const outputPath = path.join(outputDir, outputName)
     const logName = path.relative(process.cwd(), outputPath)
 
     spinner.start(chalk(`生成 ${chalk.bold(logName)}`))
-    sharp(inputPath)
-      .resize(size, size)
-      .toFile(outputPath, (err, _info) => {
-        if (err) {
-          console.error(err)
-          spinner.fail(chalk.red(`生成 ${chalk.bold(logName)} 失败`))
-        }
-        spinner.succeed(chalk.green(`生成 ${chalk.bold(logName)}`))
-      })
-  })
+    try {
+      await sharp(inputPath).resize(size, size).toFile(outputPath)
+      spinner.succeed(chalk.green(`生成 ${chalk.bold(logName)}`))
+    }
+    catch (err) {
+      console.error(err)
+      spinner.fail(chalk.red(`生成 ${chalk.bold(logName)} 失败`))
+    }
+  }
 }
 
 export function getSharpFormat() {

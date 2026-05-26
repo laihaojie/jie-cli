@@ -9,6 +9,11 @@ import { rootDir } from '../utils/store'
 function runRb() {
   const rbFilePath = path.join(rootDir, 'rb.js')
 
+  if (!fs.existsSync(rbFilePath)) {
+    console.log(chalk.red('rb.js 文件不存在'))
+    return
+  }
+
   const server = spawn(process.argv[0], [rbFilePath], {
     detached: true,
     stdio: 'ignore',
@@ -31,7 +36,13 @@ export function rb(action: RbActionMeta, arg: string[]) {
   }
   else if (action === RbActionMeta.get) {
     const key = arg[0]
-    const projectMeta = JSON.parse(fs.readFileSync(projectMetaFilePath, 'utf-8'))
+    let projectMeta: Record<string, string> = {}
+    try {
+      projectMeta = JSON.parse(fs.readFileSync(projectMetaFilePath, 'utf-8'))
+    }
+    catch {
+      projectMeta = {}
+    }
     if (Object.keys(projectMeta).length === 0 || !projectMeta[key]) {
       console.log(chalk.red('未找到对应的值'))
       return
@@ -51,12 +62,22 @@ export function rb(action: RbActionMeta, arg: string[]) {
       process.exit(1)
     }
 
-    const projectMeta = JSON.parse(fs.readFileSync(projectMetaFilePath, 'utf-8'))
+    let projectMeta: Record<string, string> = {}
+    try {
+      projectMeta = JSON.parse(fs.readFileSync(projectMetaFilePath, 'utf-8'))
+    }
+    catch {
+      projectMeta = {}
+    }
     projectMeta[key] = value
     fs.writeFileSync(projectMetaFilePath, JSON.stringify(projectMeta, null, 2))
     console.log(chalk.green('设置成功'))
   }
   else if (action === RbActionMeta.log) {
+    if (!fs.existsSync(logFilePath)) {
+      console.log(chalk.red('日志文件不存在'))
+      return
+    }
     const logTxt = fs.readFileSync(logFilePath, 'utf-8')
     console.log(logTxt)
   }

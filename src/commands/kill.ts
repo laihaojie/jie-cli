@@ -14,13 +14,15 @@ export function killPort(port: any) {
     return
   }
   // 判断port是否为字符串数字
-  if (!/^\d+$/.test(port))
+  if (!/^\d+$/.test(port)) {
     console.error(chalk.red('端口号格式错误'))
+    return
+  }
 
   // 判断当前系统
   const isWin = process.platform === 'win32'
   if (isWin) {
-    const cmd = `netstat -ano | findstr ${port}`
+    const cmd = `netstat -ano | findstr :${port} `
     console.log(chalk.white(`执行查询命令：${cmd}`), '\n')
     const res = runCmdGetRes(cmd, { shell: 'powershell.exe' })
     console.log(chalk.green(res), '\n')
@@ -29,23 +31,36 @@ export function killPort(port: any) {
     if (res && res.includes('TCP')) {
       // 根据换行符分割
       const resArr = res.split(/\r\n|\r|\n/)
+      const pids = new Set<string>()
       if (resArr.length) {
         // 遍历 找到 PID
         for (let i = 0; i < resArr.length; i++) {
           const item = resArr[i]
-          if (new RegExp(`:${port}`).test(item)) {
-            const pid = item.split(/\s+/).pop().trim()
-
-            console.log(chalk.red(`进程ID：${chalk.bold(`${pid}`)}`), '\n')
-
-            // 杀死进程
-            const cmd = `taskkill /pid ${pid} -f`
-            console.log(chalk.white(`执行杀死PID命令：${cmd}`), '\n')
-            const res = runCmdGetRes(cmd, { shell: 'powershell.exe' })
-            console.log(chalk.green(res), '\n')
-            break
+          if (new RegExp(`:${port}(?!\d)`).test(item)) {
+            const pid = item.split(/\s+/).pop()?.trim()
+            if (pid) pids.add(pid)
           }
         }
+      }
+      for (const pid of pids) {
+        console.log(chalk.red(`进程ID：${chalk.bold(`${pid}`)}`), '\n')
+
+        // 杀死进程
+        const killCmd = `taskkill /pid ${pid} -f`
+        console.log(chalk.white(`执行杀死PID命令：${killCmd}`), '\n')
+        const killRes = runCmdGetRes(killCmd, { shell: 'powershell.exe' })
+        console.log(chalk.green(killRes), '\n')
+      }
+    }
+  }
+  else {
+    const lsof = runCmdGetRes(`lsof -ti:${port}`)
+    if (lsof) {
+      const pids = lsof.split(/\r\n|\r|\n/).filter(Boolean)
+      for (const pid of pids) {
+        console.log(chalk.red(`进程ID：${chalk.bold(`${pid}`)}`), '\n')
+        const killRes = runCmdGetRes(`kill -9 ${pid}`)
+        console.log(chalk.green(killRes), '\n')
       }
     }
   }

@@ -4,8 +4,8 @@ import { execSync, spawn } from 'node:child_process'
 import process from 'node:process'
 import chalk from 'chalk'
 import iconv from 'iconv-lite'
-import { getGitBashPath } from './terminal'
 import { Platform } from './platform'
+import { getGitBashPath } from './terminal'
 
 export function runCmdSync(cmd, options = {} as ExecSyncOptions) {
   if (!cmd) {
@@ -31,7 +31,7 @@ export function runCmdSync(cmd, options = {} as ExecSyncOptions) {
   }
   catch (e: any) {
     if (e.status === 1 && cmd.trim().startsWith('explorer')) {
-      return;
+      return
     }
 
     console.error(chalk.bold.red('指令执行失败:'), e.message)
@@ -61,11 +61,12 @@ export function runCmdGetRes(cmd, options = {} as ExecSyncOptions) {
     }
   }
   catch (e: any) {
-    console.error(chalk.bold.red('指令执行失败:'), iconv.decode(Buffer.from(e.message), 'utf8').trim())
-    return iconv.decode(Buffer.from(e.message), 'utf8').trim()
+    const msg = typeof e.message === 'string' ? e.message : String(e.message)
+    console.error(chalk.bold.red('指令执行失败:'), msg)
+    return msg
   }
 
-  return iconv.decode(Buffer.from(res), 'utf8').trim()
+  return iconv.decode(res, 'utf8').trim()
 }
 
 export function runCmd(cmd: string, options: SpawnOptions = {}): Promise<void> {
@@ -95,6 +96,10 @@ export function runCmd(cmd: string, options: SpawnOptions = {}): Promise<void> {
 
     child.stdout.on('data', (data) => {
       console.log(iconv.decode(Buffer.from(data), 'utf8').trim())
+    })
+
+    child.stderr.on('data', (data) => {
+      console.error(chalk.bold.red(iconv.decode(Buffer.from(data), 'utf8').trim()))
     })
 
     child.on('error', (err) => {

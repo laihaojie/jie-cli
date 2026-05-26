@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import http from 'node:http'
 import process from 'node:process'
@@ -67,16 +68,32 @@ function handleGet(req, res) {
   res.end()
 }
 
+const MAX_BODY_SIZE = 1024 * 1024 // 1MB
+
+function sanitizeCmd(cmd: string): boolean {
+  // 拒绝包含高危 shell 元字符的命令（管道、命令替换、反引号）
+  // 允许常见的 && ; 等组合符，因为实际业务场景需要
+  return !/[|`\\]/.test(cmd) && !/\$\(/.test(cmd) && !/\$\{/.test(cmd)
+}
+
 function handlePost(req, res) {
   // 获取请求体
-  let body = ''
+  const chunks: Buffer[] = []
+  let bodySize = 0
   req.on('data', (chunk) => {
-    body += chunk
+    bodySize += chunk.length
+    if (bodySize > MAX_BODY_SIZE) {
+      req.destroy()
+      R.error(res, '请求体过大')
+      return
+    }
+    chunks.push(chunk)
   })
   req.on('end', () => {
     try {
       // 解析请求体
       let data = {} as Record<string, string>
+      const body = Buffer.concat(chunks).toString('utf-8')
       try {
         data = JSON.parse(body)
       }
@@ -89,6 +106,10 @@ function handlePost(req, res) {
         R.error(res, '缺少指令配置')
         return
       }
+      if (!sanitizeCmd(cmd)) {
+        R.error(res, '指令包含非法字符')
+        return
+      }
       if (cwd) {
         if (!fs.existsSync(cwd)) {
           R.success(res, { data: '目录不存在', cwd: '' })
@@ -96,7 +117,7 @@ function handlePost(req, res) {
         }
       }
 
-      const isPowerShell = shell.includes('powershell')
+      const isPowerShell = /powershell/i.test(shell)
       let command = ''
       if (isPowerShell)
         command = `${cmd}; echo __jie__; pwd; echo __jie__`
@@ -107,11 +128,10 @@ function handlePost(req, res) {
 
       if (str.trim().startsWith('__jie__')) str = `\n${str}`
 
-      // eslint-disable-next-line regexp/no-super-linear-backtracking
-      const templateReg = /[^echo ]__jie__\s*([\s\S]*?)\s*__jie__/
-
       let wd = ''
-      const currentWorkDir = str.match(templateReg)?.[1] || ''
+      // 用字符串 split 替代正则，避免回溯风险
+      const parts = str.split('__jie__')
+      const currentWorkDir = parts.length >= 3 ? parts[1] : ''
 
       if (!currentWorkDir) {
         R.success(res, { data: `Command failed: ${cmd}`, cwd: '' })
@@ -129,8 +149,9 @@ function handlePost(req, res) {
         wd = currentWorkDir.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`)).trim()
       }
 
-      // 处理请求体
-      R.success(res, { data: str.replace(templateReg, '').replace(/\n$/, ''), cwd: wd })
+      // 处理请求体：移除 __jie__ 标记及其包裹的内容
+      const dataStr = parts.filter((_p, i) => i !== 1).join('__jie__').replace(/\n$/, '')
+      R.success(res, { data: dataStr, cwd: wd })
     }
     catch (error) {
       R.error(res, `未知错误${error}`)
