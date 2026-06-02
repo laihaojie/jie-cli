@@ -30,10 +30,10 @@ export default async function () {
 
   program
     .command('info')
-    .description('查看脚手架信息')
-    .action(() => {
-      info()
-    })
+    .description('查看本机信息')
+    .option('--cli', '查看 CLI 信息')
+    .option('-a, --all', '查看全部信息')
+    .action(async options => await info(options))
 
   program
     .command('create')
