@@ -7,20 +7,57 @@ export const rootDir = path.resolve(os.homedir(), './.jie')
 if (!fs.existsSync(rootDir))
   fs.mkdirSync(rootDir)
 
-const versionPath = path.resolve(os.homedir(), './.jie/version.txt')
+const versionPath = path.resolve(rootDir, './version.json')
+const oldVersionPath = path.resolve(rootDir, './version.txt')
 
-export function saveVersion(token: string): string {
-  fs.writeFileSync(versionPath, token)
-  return token
+export interface VersionCache {
+  latestVersion: string
+  lastSuccessAt: number
+  lastAttemptAt: number
 }
 
-export function getVersion(): string {
-  if (!fs.existsSync(versionPath))
-    return ''
+export function saveVersionCache(cache: VersionCache): void {
+  fs.writeFileSync(versionPath, JSON.stringify(cache))
+}
 
-  return fs.readFileSync(versionPath, 'utf-8')
+export function getVersionCache(): VersionCache | null {
+  try {
+    if (fs.existsSync(versionPath)) {
+      const raw = fs.readFileSync(versionPath, 'utf-8').trim()
+      const data = JSON.parse(raw)
+      if (typeof data === 'string')
+        return { latestVersion: data, lastSuccessAt: 0, lastAttemptAt: 0 }
+      return data as VersionCache
+    }
+
+    // 从旧 version.txt 迁移
+    if (fs.existsSync(oldVersionPath)) {
+      const ver = fs.readFileSync(oldVersionPath, 'utf-8').trim()
+      try {
+        fs.unlinkSync(oldVersionPath)
+      }
+      catch {}
+      if (ver) {
+        const cache: VersionCache = { latestVersion: ver, lastSuccessAt: Date.now(), lastAttemptAt: Date.now() }
+        saveVersionCache(cache)
+        return cache
+      }
+    }
+
+    return null
+  }
+  catch {
+    return null
+  }
 }
 
 export function clearVersion(): void {
-  fs.unlinkSync(versionPath)
+  try {
+    fs.unlinkSync(versionPath)
+  }
+  catch {}
+  try {
+    fs.unlinkSync(oldVersionPath)
+  }
+  catch {}
 }
