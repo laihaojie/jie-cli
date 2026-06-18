@@ -51,19 +51,26 @@ export async function zipFolder(options: ZipOptions = {}) {
     throw new Error(`无效的输入路径: ${error.message}`)
   }
 
-  // 设置默认输出路径为输入文件夹名称+.zip
-  const defaultOutputPath = path.join(absoluteInputPath, `${path.basename(absoluteInputPath)}.zip`)
-  let finalOutputPath = outputPath ? path.join(path.resolve(outputPath), `${path.basename(absoluteInputPath)}.zip`) : defaultOutputPath
+  // 设置默认输出路径：输入文件夹名称.zip，放在当前工作目录
+  const inputName = path.basename(absoluteInputPath)
+  const defaultOutputPath = path.join(process.cwd(), `${inputName}.zip`)
 
-  // 检查 outputPath 是否为目录，若是则追加默认文件名
-  try {
-    const outputStats = await fs.lstat(finalOutputPath).catch(() => null)
-    if (outputStats && outputStats.isDirectory()) {
-      finalOutputPath = path.join(finalOutputPath, `${path.basename(absoluteInputPath)}.zip`)
+  let finalOutputPath = defaultOutputPath
+  if (outputPath) {
+    const resolvedOutput = path.resolve(outputPath)
+    try {
+      const outputStats = await fs.lstat(resolvedOutput)
+      if (outputStats.isDirectory()) {
+        finalOutputPath = path.join(resolvedOutput, `${inputName}.zip`)
+      }
+      else {
+        finalOutputPath = resolvedOutput
+      }
     }
-  }
-  catch {
-    // 文件不存在，忽略错误
+    catch {
+      // 路径不存在，视为文件路径
+      finalOutputPath = resolvedOutput
+    }
   }
 
   // 确保输出路径以 .zip 结尾

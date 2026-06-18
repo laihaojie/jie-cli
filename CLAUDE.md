@@ -11,6 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Command | Purpose |
 |---------|---------|
 | `pnpm dev` | Run the CLI in development mode via `esno index.ts` |
+| `pnpm dev <command>` | Run a specific CLI command in development, e.g. `pnpm dev info --all` |
 | `pnpm bridge` | Run the bridge HTTP server directly via `esno src/bridge.ts` |
 | `pnpm build` | Production build using `tsdown` (outputs to `dist/`) |
 | `pnpm lint` / `pnpm lint:fix` | Run ESLint with `@djie/eslint-config` |
@@ -27,6 +28,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Entry binary:** `bin/jie.cjs` requires `../dist/jie.cjs`
 
 The legacy configs (`tsup.config.ts`, `build.config.ts`) remain in the repo but are no longer used in the default build.
+
+`tsdown` emits `dist/bridge.cjs` and `dist/check.cjs` alongside `dist/jie.cjs`. These files are resolved at runtime relative to the bundled `__dirname`.
 
 ## High-Level Architecture
 
@@ -47,7 +50,7 @@ All commands are registered inline in `src/index.ts` using `program.command(...)
 
 ### Background Bridge Server (`src/bridge.ts`)
 
-On every CLI invocation, `startServer()` (in `src/commands/server.ts`) attempts to spawn `src/bridge.ts` as a detached background process listening on `http://127.0.0.1:32677`. The server exposes a simple HTTP POST API that accepts `{ cmd, shell?, cwd? }` and returns the command output plus the resulting working directory. This is used by external tools (e.g., a web UI) to execute shell commands through the CLI.
+On every CLI invocation, `startServer()` (in `src/commands/server.ts`) attempts to spawn `dist/bridge.cjs` as a detached background process listening on `http://127.0.0.1:32677`. The URL and port are defined in `src/config/index.ts`. The server exposes a simple HTTP POST API that accepts `{ cmd, shell?, cwd? }` and returns the command output plus the resulting working directory. This is used by external tools (e.g., a web UI) to execute shell commands through the CLI.
 
 ### Shell Execution Abstraction (`src/utils/run.ts`)
 
@@ -62,6 +65,10 @@ On Windows, these utilities prefer Git Bash (`globalThis.__GIT_BASH`) if availab
 
 The `create` command uses `degit` to clone templates from GitHub. Templates are defined in the `createMeta` object. Adding a new template only requires adding an entry there with a `templateUrl` and optional `prompt`/`effect` hooks.
 
+### Version Check (`src/check.ts`)
+
+`checkVersion()` (in `src/utils/checkVersion.ts`) spawns `dist/check.cjs` as a detached background process when the cached version data is older than one hour. It fetches the latest version from `https://registry.npmjs.org/@djie%2Fcli/latest` and stores it in `~/.jie/version.json`. On the next CLI run, if the cached version is newer than the installed version, a prompt to run `jie update` is printed.
+
 ### Local State
 
 Runtime state (e.g., cached latest version) is stored in `~/.jie/`, managed by `src/utils/store.ts`.
@@ -69,5 +76,7 @@ Runtime state (e.g., cached latest version) is stored in `~/.jie/`, managed by `
 ## Code Style
 
 - ESLint config extends `@djie/eslint-config` with `no-console: 'off'`.
+- ESLint ignores `bin/` and `bin1/template/`.
 - TypeScript strict mode is enabled, but `strictNullChecks`, `strictBindCallApply`, `noImplicitAny`, and `forceConsistentCasingInFileNames` are disabled.
+- `noImplicitReturns` is enabled.
 - Target is ES2017, module output is CommonJS.
