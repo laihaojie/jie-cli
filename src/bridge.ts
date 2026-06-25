@@ -1,182 +1,246 @@
-import { Buffer } from 'node:buffer'
+import type { IPty } from 'node-pty'
 import fs from 'node:fs'
 import http from 'node:http'
+import os from 'node:os'
+import path from 'node:path'
 import process from 'node:process'
-import { runCmdGetRes } from './utils/run'
-// import { WebSocketServer } from 'ws'
-// import * as pty from 'node-pty'
+import { WebSocketServer } from 'ws'
+import { bridgeAuthToken, bridgeHost, bridgePort } from './config'
+import { getTerminalHtml } from './terminalHtml'
+import { getGitBashPath } from './utils/terminal'
 
-// Create an HTTP server
+// 运行时加载 node-pty（原生模块），失败时给出友好提示而非裸崩
+let pty: typeof import('node-pty')
+try {
+  // eslint-disable-next-line ts/no-require-imports
+  pty = require('node-pty')
+}
+catch (e) {
+  console.error('')
+  console.error('[bridge] ❌ 加载 node-pty 原生模块失败，网页终端无法启动。')
+  console.error('    常见原因与处理：')
+  console.error('    • pnpm 安装忽略了构建脚本 → 运行 pnpm approve-builds 选择 node-pty（Win/mac 不 approve 也能用，靠系统 ConPTY）')
+  console.error('    • Linux 无预编译包 → 先装 Python + 编译工具链(build-essential/make/g++) 再重装')
+  console.error(`    详细错误：${(e as Error).message}`)
+  console.error('')
+  process.exit(1)
+}
+
+// 运行时配置（可由环境变量覆盖，默认取 config）
+const PORT = Number(process.env.JIE_BRIDGE_PORT) || bridgePort
+const HOST = process.env.JIE_BRIDGE_HOST || bridgeHost
+const AUTH_TOKEN = process.env.JIE_AUTH_TOKEN || bridgeAuthToken // 空 = 不鉴权（默认信任内网）
+
+const MIME: Record<string, string> = {
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+}
+
+interface ShellSpec { file: string, args: string[] }
+
+// 解析 shell：query 优先 → 默认 Git Bash（win）→ 回退 powershell/cmd → sh（unix）
+function resolveShell(shellQuery?: string | null): ShellSpec {
+  if (shellQuery) {
+    const q = shellQuery.toLowerCase()
+    if (q === 'bash' || q === 'sh') {
+      const b = process.platform === 'win32' ? (getGitBashPath() || 'bash') : (process.env.SHELL || 'bash')
+      return { file: b, args: [] }
+    }
+    if (q === 'powershell' || q === 'pwsh')
+      return { file: q === 'pwsh' ? 'pwsh.exe' : 'powershell.exe', args: ['-NoLogo'] }
+    if (q === 'cmd')
+      return { file: 'cmd.exe', args: [] }
+    // 视为自定义可执行路径
+    return { file: shellQuery, args: [] }
+  }
+  if (process.platform === 'win32') {
+    const bash = getGitBashPath()
+    if (bash)
+      return { file: bash, args: ['--login'] }
+    return { file: 'powershell.exe', args: ['-NoLogo'] }
+  }
+  return { file: process.env.SHELL || 'bash', args: [] }
+}
+
+// xterm 静态资源映射（运行时 require.resolve，需 external 这些包）
+const ASSET_MODULES: Record<string, string> = {
+  '/xterm.js': '@xterm/xterm/lib/xterm.js',
+  '/xterm.css': '@xterm/xterm/css/xterm.css',
+  '/addon-fit.js': '@xterm/addon-fit/lib/addon-fit.js',
+}
+
+function sendFile(res: http.ServerResponse, absPath: string): void {
+  try {
+    const data = fs.readFileSync(absPath)
+    res.setHeader('Content-Type', MIME[path.extname(absPath)] || 'application/octet-stream')
+    res.end(data)
+  }
+  catch {
+    res.statusCode = 500
+    res.end('asset read failed')
+  }
+}
+
 const server = http.createServer((req, res) => {
-  // 解决跨域问题
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
 
-  // 获取请求方法和请求路径
-  const { method, url } = req
-  if (method === 'GET' && url === '/')
-    handleGet(req, res)
+  const urlObj = new URL(req.url || '/', `http://${req.headers.host || HOST}`)
+  const pathname = urlObj.pathname
 
-  if (method === 'POST' && url === '/')
-    handlePost(req, res)
-
-  if (method === 'OPTIONS')
+  if (req.method === 'OPTIONS') {
     res.end()
+    return
+  }
+
+  // 健康检查（供 startServer 活性检测）
+  if (req.method === 'GET' && pathname === '/health') {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.end(JSON.stringify({ ok: true, service: 'jie-bridge' }))
+    return
+  }
+
+  // 终端网页
+  if (req.method === 'GET' && pathname === '/') {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.end(getTerminalHtml())
+    return
+  }
+
+  // xterm 静态资源
+  if (req.method === 'GET' && ASSET_MODULES[pathname]) {
+    try {
+      const abs = require.resolve(ASSET_MODULES[pathname])
+      sendFile(res, abs)
+    }
+    catch {
+      res.statusCode = 500
+      res.end('asset resolve failed')
+    }
+    return
+  }
+
+  res.statusCode = 404
+  res.end('Not Found')
 })
 
-// const wss = new WebSocketServer({ server });
+// WebSocket 终端：每条连接创建一个真实 PTY，双向转发
+const wss = new WebSocketServer({ noServer: true })
 
-// wss.on('connection', (ws) => {
-//   // 创建伪终端
-//   const term = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : 'bash', [], {
-//     name: 'xterm-color',
-//     cols: 80,
-//     rows: 24,
-//     cwd: process.env.HOME,
-//     env: process.env
-//   });
-
-//   // 终端数据 -> 发送给前端
-//   term.onData(data => ws.send(data));
-
-//   // 前端消息 -> 写入终端
-//   ws.on('message', (data) => {
-//     term.write(data.toString());
-//   });
-
-//   // 关闭处理
-//   ws.on('close', () => {
-//     term.kill();
-//   });
-// });
-
-class R {
-  static success(res, data) {
-    res.write(JSON.stringify({ code: 1, data }))
-    res.end()
+server.on('upgrade', (req, socket, head) => {
+  const urlObj = new URL(req.url || '/', `http://${req.headers.host || HOST}`)
+  if (urlObj.pathname !== '/ws') {
+    socket.destroy()
+    return
   }
-
-  static error(res, data) {
-    res.write(JSON.stringify({ code: 3, data }))
-    res.end()
-  }
-}
-
-function handleGet(req, res) {
-  res.write('jie bridge')
-  res.end()
-}
-
-const MAX_BODY_SIZE = 1024 * 1024 // 1MB
-
-function sanitizeCmd(cmd: string): boolean {
-  // 拒绝包含高危 shell 元字符的命令（管道、命令替换、反引号）
-  // 允许常见的 && ; 等组合符，因为实际业务场景需要
-  return !/[|`\\]/.test(cmd) && !/\$\(/.test(cmd) && !/\$\{/.test(cmd)
-}
-
-function handlePost(req, res) {
-  // 获取请求体
-  const chunks: Buffer[] = []
-  let bodySize = 0
-  req.on('data', (chunk) => {
-    bodySize += chunk.length
-    if (bodySize > MAX_BODY_SIZE) {
-      req.destroy()
-      R.error(res, '请求体过大')
+  // 鉴权钩子（默认放行，AUTH_TOKEN 为空时不校验）
+  if (AUTH_TOKEN) {
+    const token = urlObj.searchParams.get('token')
+    if (token !== AUTH_TOKEN) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n')
+      socket.destroy()
       return
     }
-    chunks.push(chunk)
-  })
-  req.on('end', () => {
+  }
+  wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req))
+})
+
+wss.on('connection', (ws, req) => {
+  const urlObj = new URL(req.url || '/ws', `http://${req.headers.host || HOST}`)
+  const cols = Math.min(400, Math.max(10, Number(urlObj.searchParams.get('cols')) || 80))
+  const rows = Math.min(120, Math.max(2, Number(urlObj.searchParams.get('rows')) || 24))
+  const { file, args } = resolveShell(urlObj.searchParams.get('shell'))
+
+  let term: IPty
+  try {
+    term = pty.spawn(file, args, {
+      name: 'xterm-256color',
+      cols,
+      rows,
+      cwd: os.homedir(),
+      env: process.env as Record<string, string>,
+      useConpty: process.platform === 'win32',
+    })
+  }
+  catch (e) {
     try {
-      // 解析请求体
-      let data = {} as Record<string, string>
-      const body = Buffer.concat(chunks).toString('utf-8')
+      ws.send(`\r\n[启动 shell 失败: ${file}]\r\n${String(e)}`)
+    }
+    catch {}
+    ws.close()
+    return
+  }
+
+  console.log(`[bridge] 终端连接 pid=${term.pid} shell=${file} ${cols}x${rows}`)
+
+  // 终端输出 → 浏览器
+  term.onData((data) => {
+    if (ws.readyState === 1)
+      ws.send(data)
+  })
+
+  // 进程退出 → 关闭连接
+  term.onExit(({ exitCode }) => {
+    try {
+      ws.send(`\r\n[进程已退出，代码 ${exitCode}]`)
+    }
+    catch {}
+    try {
+      ws.close()
+    }
+    catch {}
+  })
+
+  // 浏览器输入 → 终端（JSON 控制消息用于 resize）
+  ws.on('message', (msg) => {
+    const raw = msg.toString()
+    if (raw.charCodeAt(0) === 123 /* '{' */) {
       try {
-        data = JSON.parse(body)
-      }
-      catch (error) {
-        R.error(res, `请求体解析失败${error}`)
-        return
-      }
-      const { cmd, shell = '', cwd } = data
-      if (!cmd) {
-        R.error(res, '缺少指令配置')
-        return
-      }
-      if (!sanitizeCmd(cmd)) {
-        R.error(res, '指令包含非法字符')
-        return
-      }
-      if (cwd) {
-        if (!fs.existsSync(cwd)) {
-          R.success(res, { data: '目录不存在', cwd: '' })
+        const ctrl = JSON.parse(raw)
+        if (ctrl && ctrl.type === 'resize' && ctrl.cols && ctrl.rows) {
+          try {
+            term.resize(Math.max(1, Number(ctrl.cols)), Math.max(1, Number(ctrl.rows)))
+          }
+          catch {}
           return
         }
       }
-
-      const isPowerShell = /powershell/i.test(shell)
-      let command = ''
-      if (isPowerShell)
-        command = `${cmd}; echo __jie__; pwd; echo __jie__`
-      else
-        command = `${cmd} && echo __jie__ && pwd && echo __jie__`
-
-      let str = runCmdGetRes(command, { shell: shell || undefined, cwd: cwd || undefined })
-
-      if (str.trim().startsWith('__jie__')) str = `\n${str}`
-
-      let wd = ''
-      // 用字符串 split 替代正则，避免回溯风险
-      const parts = str.split('__jie__')
-      const currentWorkDir = parts.length >= 3 ? parts[1] : ''
-
-      if (!currentWorkDir) {
-        R.success(res, { data: `Command failed: ${cmd}`, cwd: '' })
-        return
+      catch {
+        // 非合法 JSON → 按普通输入处理
       }
-
-      if (isPowerShell) {
-        wd = currentWorkDir.trim().match(/.*$/)?.[0].trim() || ''
-        if (wd.match(/Path\s+:/)) {
-          wd = wd.replace(/Path\s+:/, '').trim()
-        }
-      }
-
-      else {
-        wd = currentWorkDir.replace(/^[\\/](\w)[\\/]/, (_, $1) => (`${$1.toUpperCase()}:/`)).trim()
-      }
-
-      // 处理请求体：移除 __jie__ 标记及其包裹的内容
-      const dataStr = parts.filter((_p, i) => i !== 1).join('__jie__').replace(/\n$/, '')
-      R.success(res, { data: dataStr, cwd: wd })
     }
-    catch (error) {
-      R.error(res, `未知错误${error}`)
-    }
+    term.write(raw)
   })
-}
 
-// 处理未捕获的异常
+  // 连接关闭/出错 → 释放 PTY，不留僵尸
+  const cleanup = () => {
+    try {
+      term.kill()
+    }
+    catch {}
+  }
+  ws.on('close', cleanup)
+  ws.on('error', cleanup)
+})
+
 process.on('uncaughtException', (err) => {
-  console.error('uncaughtException', err)
+  console.error('[bridge] uncaughtException', err)
 })
-
 process.on('unhandledRejection', (err) => {
-  console.error('unhandledRejection', err)
+  console.error('[bridge] unhandledRejection', err)
 })
 
-// Listen on port 32677
-server.listen(32677, () => {
-  console.log('Server is running...')
+server.listen(PORT, HOST, () => {
+  console.log(`[bridge] 监听 ${HOST}:${PORT}`)
+  if (!AUTH_TOKEN)
+    console.log('[bridge] ⚠️ 未启用鉴权，同网任何人可执行命令')
 })
 
-// 捕获退出事件
 process.on('SIGTERM', () => {
-  console.log('Daemon process terminated.')
-  server.close(() => {
-    process.exit(0)
-  })
+  console.log('[bridge] 收到 SIGTERM，关闭服务')
+  wss.close()
+  server.close(() => process.exit(0))
 })

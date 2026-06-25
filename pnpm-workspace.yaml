@@ -1,5 +1,6 @@
 allowBuilds:
   esbuild: true
+  node-pty: true
   sharp: true
 nodeLinker: hoisted
 shellEmulator: true

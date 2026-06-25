@@ -24,7 +24,7 @@ import { Platform } from './utils/platform'
 import { runCmdSync } from './utils/run'
 
 export default async function () {
-  startServer()
+  await startServer()
 
   const program = new Command()
 
