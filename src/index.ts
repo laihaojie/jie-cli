@@ -15,7 +15,7 @@ import { openAppByKeyword } from './commands/open'
 import { random } from './commands/random'
 import { rb } from './commands/rb'
 import { findLargeFiles } from './commands/seek'
-import { startServer } from './commands/server'
+import { printServerInfo, startServer } from './commands/server'
 import { update } from './commands/update'
 import { zipFolder } from './commands/zip'
 import { checkVersion } from './utils/checkVersion'
@@ -33,7 +33,11 @@ export default async function () {
     .description('查看本机信息')
     .option('--cli', '查看 CLI 信息')
     .option('-a, --all', '查看全部信息')
-    .action(async options => await info(options))
+    .action(async (options) => {
+      await info(options)
+      if (options.cli)
+        printServerInfo()
+    })
 
   program
     .command('create')

@@ -7,6 +7,7 @@ import chalk from 'chalk'
 import Table from 'cli-table3'
 import { author, homepage, name, version } from '../../package.json'
 import { localServer } from '../config'
+import { getLanIpv4Addresses } from '../utils/network'
 
 function formatBytes(bytes: number) {
   const gb = bytes / 1024 / 1024 / 1024
@@ -39,16 +40,13 @@ function getOSName() {
 
 function getNetworkInfo() {
   const interfaces = networkInterfaces()
-  const ips: string[] = []
+  const ips = getLanIpv4Addresses()
   let mac = ''
   for (const iface of Object.values(interfaces)) {
     if (!iface) continue
     for (const info of iface) {
-      if (!info.internal && info.family === 'IPv4') {
-        ips.push(info.address)
-        if (!mac && info.mac !== '00:00:00:00:00:00')
-          mac = info.mac
-      }
+      if (!info.internal && info.family === 'IPv4' && !mac && info.mac !== '00:00:00:00:00:00')
+        mac = info.mac
     }
   }
   return { ips, mac: mac || '未知' }
@@ -215,13 +213,17 @@ export async function info(options: { cli?: boolean, all?: boolean }) {
   }
 
   if (showCli) {
+    const port = urlObj.port
+    const ips = getLanIpv4Addresses()
     printTable('CLI 信息', [
       ['包名称', chalk.green(name)],
       ['版本', chalk.green(version)],
       ['npm地址', chalk.green(`https://www.npmjs.com/package/${name}`)],
       ['仓库地址', chalk.green(homepage)],
       ['GitHub', chalk.green(`https://github.com/${author}`)],
-      ['服务端口', chalk.green(urlObj.port)],
+      ['服务端口', chalk.green(port)],
+      ['服务地址', chalk.green(`http://localhost:${port}`)],
+      ['本地 IPv4', chalk.green(ips.length > 0 ? ips.map(ip => `http://${ip}:${port}`).join('\n') : '未连接')],
     ])
   }
 

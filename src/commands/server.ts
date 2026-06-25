@@ -1,10 +1,10 @@
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import chalk from 'chalk'
 import { localServer } from '../config'
+import { getLanIpv4Addresses } from '../utils/network'
 
 const serverFilePath = path.resolve(__dirname, 'bridge.cjs')
 const healthUrl = `${localServer}/health`
@@ -35,19 +35,6 @@ async function pollHealth(url: string, timeoutMs: number): Promise<boolean> {
     await new Promise(r => setTimeout(r, 200))
   }
   return false
-}
-
-// 获取本机局域网 IPv4（排除回环地址）
-export function getLanIpv4Addresses(): string[] {
-  const ifaces = os.networkInterfaces()
-  const result: string[] = []
-  for (const name in ifaces) {
-    for (const iface of ifaces[name] || []) {
-      if (iface.family === 'IPv4' && !iface.internal)
-        result.push(iface.address)
-    }
-  }
-  return result
 }
 
 // 打印局域网访问信息与风险提示（首次拉起时调用）
