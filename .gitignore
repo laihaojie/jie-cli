@@ -29,3 +29,8 @@ yarn.lock
 /test.ts
 /pnpm-lock.yaml
 /assets
+
+# AI/Trellis 工具文件（开发辅助，不进业务仓库）
+.trellis/
+.claude/
+AGENTS.md
