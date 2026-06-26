@@ -8,9 +8,8 @@ import path from 'node:path'
 import process from 'node:process'
 import { WebSocketServer } from 'ws'
 import { bridgeHost, bridgePort } from './config'
-import { getLoginHtml } from './loginHtml'
-import { getTerminalHtml } from './terminalHtml'
 import { getAuthPassword } from './utils/authConfig'
+import { getLanIpv4Addresses } from './utils/network'
 import { createSessionToken, initSessionSecret, SESSION_COOKIE, SESSION_MAX_AGE, verifySessionToken } from './utils/session'
 import { getGitBashPath } from './utils/terminal'
 
@@ -36,6 +35,13 @@ const PORT = Number(process.env.JIE_BRIDGE_PORT) || bridgePort
 const HOST = process.env.JIE_BRIDGE_HOST || bridgeHost
 // 鉴权密码：环境变量 JIE_AUTH_TOKEN 优先，否则读 ~/.jie/config.json；空 = 不鉴权
 const AUTH_PASSWORD = process.env.JIE_AUTH_TOKEN || getAuthPassword()
+
+// 本机 IPv4 末段（用于前端标题前缀，多设备区分），如 192.168.31.134 → 134
+const HOST_SUFFIX = (() => {
+  const ips = getLanIpv4Addresses()
+  const first = ips[0]
+  return first ? first.split('.').pop() ?? '' : ''
+})()
 
 // 启用鉴权时初始化会话密钥（进程级随机，重启失效）
 if (AUTH_PASSWORD)
@@ -111,7 +117,19 @@ const MIME: Record<string, string> = {
   '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.map': 'application/json; charset=utf-8',
 }
+
+// 前端 SPA 静态资源根（dist/web/）
+const WEB_ROOT = path.resolve(__dirname, 'web')
 
 interface ShellSpec { file: string, args: string[] }
 
@@ -139,13 +157,6 @@ function resolveShell(shellQuery?: string | null): ShellSpec {
   return { file: process.env.SHELL || 'bash', args: [] }
 }
 
-// xterm 静态资源映射（运行时 require.resolve，需 external 这些包）
-const ASSET_MODULES: Record<string, string> = {
-  '/xterm.js': '@xterm/xterm/lib/xterm.js',
-  '/xterm.css': '@xterm/xterm/css/xterm.css',
-  '/addon-fit.js': '@xterm/addon-fit/lib/addon-fit.js',
-}
-
 function sendFile(res: http.ServerResponse, absPath: string): void {
   try {
     const data = fs.readFileSync(absPath)
@@ -158,9 +169,25 @@ function sendFile(res: http.ServerResponse, absPath: string): void {
   }
 }
 
-// 解析 application/x-www-form-urlencoded 表单
-function readFormBody(req: http.IncomingMessage, chunks: Buffer[] = [], max = 64 * 1024): Promise<string> {
+// 静态托管 dist/web/ 下的 SPA 资源；不存在则回 index.html（Hash 路由 fallback）
+function serveWeb(req: http.ServerResponse, pathname: string): void {
+  // 防路径穿越
+  const safe = path.normalize(pathname).replace(/^(\.\.[/\\])+/, '')
+  let abs = path.join(WEB_ROOT, safe)
+  if (!fs.existsSync(abs) || fs.statSync(abs).isDirectory())
+    abs = path.join(WEB_ROOT, 'index.html')
+  if (!fs.existsSync(abs)) {
+    req.statusCode = 404
+    req.end('web build not found')
+    return
+  }
+  sendFile(req, abs)
+}
+
+// 解析请求体（JSON 或表单）
+function readBody(req: http.IncomingMessage, max = 256 * 1024): Promise<string> {
   return new Promise((resolve) => {
+    const chunks: Buffer[] = []
     let size = 0
     let done = false
     const finish = (v: string) => {
@@ -183,30 +210,46 @@ function readFormBody(req: http.IncomingMessage, chunks: Buffer[] = [], max = 64
   })
 }
 
-// 处理登录：校验密码 → 成功设会话 cookie 重定向 /；失败限速 + 返回登录页
+function sendJson(res: http.ServerResponse, status: number, obj: unknown): void {
+  res.statusCode = status
+  res.setHeader('Content-Type', 'application/json; charset=utf-8')
+  res.end(JSON.stringify(obj))
+}
+
+function setSessionCookie(res: http.ServerResponse): void {
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${createSessionToken()}; Max-Age=${SESSION_MAX_AGE}; Path=/; HttpOnly; SameSite=Lax`)
+}
+
+function clearSessionCookie(res: http.ServerResponse): void {
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`)
+}
+
+// 处理登录：校验密码 → 成功设会话 cookie 返回 JSON；失败限速 + 返回 JSON
 async function handleLogin(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
   const ip = clientIp(req)
-  const body = await readFormBody(req)
-  const params = new URLSearchParams(body)
-  const password = params.get('password') ?? ''
+  const body = await readBody(req)
+  let password = ''
+  try {
+    password = JSON.parse(body || '{}').password ?? ''
+  }
+  catch {
+    // 容错：表单格式
+    password = new URLSearchParams(body).get('password') ?? ''
+  }
 
   if (!loginAllowed(ip)) {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    res.end(getLoginHtml('尝试过于频繁，请稍后再试'))
+    sendJson(res, 429, { ok: false, error: '尝试过于频繁，请稍后再试' })
     return
   }
 
   if (password && safeEqualPassword(password, AUTH_PASSWORD)) {
-    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${createSessionToken()}; Max-Age=${SESSION_MAX_AGE}; Path=/; HttpOnly; SameSite=Lax`)
-    res.statusCode = 303
-    res.setHeader('Location', '/')
-    res.end()
+    setSessionCookie(res)
+    sendJson(res, 200, { ok: true })
     return
   }
 
   recordLoginFail(ip)
-  res.setHeader('Content-Type', 'text/html; charset=utf-8')
-  res.end(getLoginHtml('密码错误'))
+  sendJson(res, 401, { ok: false, error: '密码错误' })
 }
 
 const server = http.createServer((req, res) => {
@@ -222,53 +265,47 @@ const server = http.createServer((req, res) => {
     return
   }
 
-  // 健康检查（供 startServer 活性检测）
+  // 健康检查（供 startServer 活性检测，不鉴权）
   if (req.method === 'GET' && pathname === '/health') {
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
     res.end(JSON.stringify({ ok: true, service: 'jie-bridge' }))
     return
   }
 
-  // 终端网页（鉴权：无密码或已登录会话 → 终端页；否则 → 登录页）
-  if (req.method === 'GET' && pathname === '/') {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    if (isAuthorized(req, urlObj))
-      res.end(getTerminalHtml())
-    else
-      res.end(getLoginHtml())
-    return
-  }
-
-  // 登录
-  if (req.method === 'POST' && pathname === '/login') {
-    handleLogin(req, res)
-    return
-  }
-
-  // 登出
-  if (req.method === 'POST' && pathname === '/logout') {
-    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`)
-    res.statusCode = 303
-    res.setHeader('Location', '/')
-    res.end()
-    return
-  }
-
-  // xterm 静态资源（鉴权：已配置密码时需有效会话）
-  if (req.method === 'GET' && ASSET_MODULES[pathname]) {
-    if (!isAuthorized(req, urlObj)) {
-      res.statusCode = 401
-      res.end('Unauthorized')
+  // ---- REST API ----
+  if (pathname.startsWith('/api/')) {
+    // 登录：不要求已登录
+    if (req.method === 'POST' && pathname === '/api/login') {
+      handleLogin(req, res)
       return
     }
-    try {
-      const abs = require.resolve(ASSET_MODULES[pathname])
-      sendFile(res, abs)
+    // 查询登录态：不要求已登录（前端启动时探测是否需要登录）
+    if (req.method === 'GET' && pathname === '/api/session') {
+      sendJson(res, 200, {
+        authRequired: Boolean(AUTH_PASSWORD),
+        loggedIn: isAuthorized(req, urlObj),
+        hostSuffix: HOST_SUFFIX,
+      })
+      return
     }
-    catch {
-      res.statusCode = 500
-      res.end('asset resolve failed')
+    // 其余 /api 需鉴权（后续模块扩展在此）
+    if (!isAuthorized(req, urlObj)) {
+      sendJson(res, 401, { ok: false, error: '未登录' })
+      return
     }
+    if (req.method === 'POST' && pathname === '/api/logout') {
+      clearSessionCookie(res)
+      sendJson(res, 200, { ok: true })
+      return
+    }
+    sendJson(res, 404, { ok: false, error: 'api not found' })
+    return
+  }
+
+  // ---- 静态 SPA + 资源（鉴权后）----
+  // 已配置密码且未登录 → 仍返回 index.html（前端路由守卫跳登录），保证 SPA 入口可加载
+  if (req.method === 'GET') {
+    serveWeb(res, pathname === '/' ? 'index.html' : pathname)
     return
   }
 

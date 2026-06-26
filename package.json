@@ -30,7 +30,10 @@
     "build:tsup": "tsup",
     "build:tsdown": "tsdown",
     "build:unbuild": "unbuild",
-    "build": "tsdown",
+    "build:cli": "tsdown",
+    "build:web": "pnpm --dir web build",
+    "dev:web": "pnpm --dir web dev",
+    "build": "pnpm build:cli && pnpm build:web",
     "release": "git add . && bumpp patch -y --commit --push --all --tag && pnpm build",
     "lint:fix": "eslint . --fix",
     "lint": "eslint ."

@@ -14,5 +14,6 @@ module.exports = jie({
     'dist',
     '.trellis',
     '.claude',
+    'web',
   ],
 })

@@ -2,5 +2,8 @@ allowBuilds:
   esbuild: true
   node-pty: true
   sharp: true
+  vue-demi: true
 nodeLinker: hoisted
 shellEmulator: true
+packages:
+  - web

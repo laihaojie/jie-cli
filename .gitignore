@@ -34,3 +34,10 @@ yarn.lock
 .trellis/
 .claude/
 AGENTS.md
+
+# web 子项目依赖与本地构建产物
+web/node_modules/
+web/dist/
+*.tsbuildinfo
+web/vite.config.d.ts
+web/vite.config.js

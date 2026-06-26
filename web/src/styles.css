@@ -1,0 +1,10 @@
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+body {
+  font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #f5f7fa;
+}
