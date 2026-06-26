@@ -4,10 +4,16 @@ import path from 'node:path'
 import process from 'node:process'
 import chalk from 'chalk'
 import { localServer } from '../config'
+import { getAuthPassword } from '../utils/authConfig'
 import { getLanIpv4Addresses } from '../utils/network'
 
 const serverFilePath = path.resolve(__dirname, 'bridge.cjs')
 const healthUrl = `${localServer}/health`
+
+// 是否启用鉴权（环境变量优先，否则看 config.json）
+export function isAuthEnabled(): boolean {
+  return Boolean(process.env.JIE_AUTH_TOKEN || getAuthPassword())
+}
 
 async function fetchWithTimeout(url: string, timeout = 3000): Promise<Response> {
   const controller = new AbortController()
@@ -41,12 +47,17 @@ async function pollHealth(url: string, timeoutMs: number): Promise<boolean> {
 export function printServerInfo(): void {
   const port = new URL(localServer).port
   const ips = getLanIpv4Addresses()
+  const authEnabled = isAuthEnabled()
   console.log('')
-  console.log(chalk.yellow('⚠️  局域网网页终端已启动（未启用鉴权，同网任何人可执行命令）'))
+  if (authEnabled)
+    console.log(chalk.green('✓  局域网网页终端已启动（已启用密码鉴权）'))
+  else
+    console.log(chalk.yellow('⚠️  局域网网页终端已启动（未启用鉴权，同网任何人可执行命令）'))
   console.log(chalk.cyan(`   本机访问  : http://localhost:${port}`))
   for (const ip of ips)
     console.log(chalk.cyan(`   局域网访问: http://${ip}:${port}`))
-  console.log(chalk.gray('   其他设备用浏览器打开以上地址即可获得终端'))
+  if (!authEnabled)
+    console.log(chalk.gray('   建议运行 jie passwd 设置访问密码'))
   console.log('')
 }
 

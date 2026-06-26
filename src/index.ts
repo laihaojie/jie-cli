@@ -12,6 +12,7 @@ import { getSharpFormat, imgResize } from './commands/img'
 import { info } from './commands/info'
 import { killPort } from './commands/kill'
 import { openAppByKeyword } from './commands/open'
+import { passwd } from './commands/passwd'
 import { random } from './commands/random'
 import { rb } from './commands/rb'
 import { findLargeFiles } from './commands/seek'
@@ -135,6 +136,14 @@ export default async function () {
     .description('杀死端口')
     .action((port) => {
       killPort(port)
+    })
+
+  program
+    .command('passwd')
+    .option('--clear', '清除鉴权密码')
+    .description('设置/清除网页终端鉴权密码')
+    .action(async (options) => {
+      await passwd(options)
     })
 
   // rb run

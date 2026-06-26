@@ -1,12 +1,17 @@
 import type { IPty } from 'node-pty'
+import { Buffer } from 'node:buffer'
+import crypto from 'node:crypto'
 import fs from 'node:fs'
 import http from 'node:http'
 import os from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { WebSocketServer } from 'ws'
-import { bridgeAuthToken, bridgeHost, bridgePort } from './config'
+import { bridgeHost, bridgePort } from './config'
+import { getLoginHtml } from './loginHtml'
 import { getTerminalHtml } from './terminalHtml'
+import { getAuthPassword } from './utils/authConfig'
+import { createSessionToken, initSessionSecret, SESSION_COOKIE, SESSION_MAX_AGE, verifySessionToken } from './utils/session'
 import { getGitBashPath } from './utils/terminal'
 
 // 运行时加载 node-pty（原生模块），失败时给出友好提示而非裸崩
@@ -29,7 +34,77 @@ catch (e) {
 // 运行时配置（可由环境变量覆盖，默认取 config）
 const PORT = Number(process.env.JIE_BRIDGE_PORT) || bridgePort
 const HOST = process.env.JIE_BRIDGE_HOST || bridgeHost
-const AUTH_TOKEN = process.env.JIE_AUTH_TOKEN || bridgeAuthToken // 空 = 不鉴权（默认信任内网）
+// 鉴权密码：环境变量 JIE_AUTH_TOKEN 优先，否则读 ~/.jie/config.json；空 = 不鉴权
+const AUTH_PASSWORD = process.env.JIE_AUTH_TOKEN || getAuthPassword()
+
+// 启用鉴权时初始化会话密钥（进程级随机，重启失效）
+if (AUTH_PASSWORD)
+  initSessionSecret()
+
+// 登录失败限速：内存 Map<ip, {count, windowStart}>，60s 内失败 5 次拒绝
+const LOGIN_LIMIT_WINDOW = 60_000
+const LOGIN_LIMIT_MAX = 5
+const loginFails = new Map<string, { count: number, windowStart: number }>()
+
+function loginAllowed(ip: string): boolean {
+  const now = Date.now()
+  const rec = loginFails.get(ip)
+  if (!rec || now - rec.windowStart > LOGIN_LIMIT_WINDOW)
+    return true
+  return rec.count < LOGIN_LIMIT_MAX
+}
+
+function recordLoginFail(ip: string): void {
+  const now = Date.now()
+  const rec = loginFails.get(ip)
+  if (!rec || now - rec.windowStart > LOGIN_LIMIT_WINDOW)
+    loginFails.set(ip, { count: 1, windowStart: now })
+  else
+    rec.count++
+}
+
+// 恒定时间密码比对
+function safeEqualPassword(a: string, b: string): boolean {
+  const ab = Buffer.from(a)
+  const bb = Buffer.from(b)
+  if (ab.length !== bb.length)
+    return false
+  return crypto.timingSafeEqual(ab, bb)
+}
+
+// 从请求头解析 cookie
+function parseCookies(req: http.IncomingMessage): Record<string, string> {
+  const header = req.headers.cookie
+  if (!header)
+    return {}
+  const cookies: Record<string, string> = {}
+  for (const part of header.split(';')) {
+    const idx = part.indexOf('=')
+    if (idx > 0) {
+      const k = part.slice(0, idx).trim()
+      const v = part.slice(idx + 1).trim()
+      cookies[k] = v
+    }
+  }
+  return cookies
+}
+
+// 当前请求是否已通过鉴权（无密码=true；有密码看会话 cookie 或 ?token=）
+function isAuthorized(req: http.IncomingMessage, urlObj: URL): boolean {
+  if (!AUTH_PASSWORD)
+    return true
+  const cookieToken = parseCookies(req)[SESSION_COOKIE]
+  if (verifySessionToken(cookieToken))
+    return true
+  const queryToken = urlObj.searchParams.get('token')
+  if (queryToken && safeEqualPassword(queryToken, AUTH_PASSWORD))
+    return true
+  return false
+}
+
+function clientIp(req: http.IncomingMessage): string {
+  return (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown'
+}
 
 const MIME: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8',
@@ -83,6 +158,57 @@ function sendFile(res: http.ServerResponse, absPath: string): void {
   }
 }
 
+// 解析 application/x-www-form-urlencoded 表单
+function readFormBody(req: http.IncomingMessage, chunks: Buffer[] = [], max = 64 * 1024): Promise<string> {
+  return new Promise((resolve) => {
+    let size = 0
+    let done = false
+    const finish = (v: string) => {
+      if (!done) {
+        done = true
+        resolve(v)
+      }
+    }
+    req.on('data', (chunk: Buffer) => {
+      size += chunk.length
+      if (size > max) {
+        req.destroy()
+        finish('')
+        return
+      }
+      chunks.push(chunk)
+    })
+    req.on('end', () => finish(Buffer.concat(chunks).toString('utf-8')))
+    req.on('error', () => finish(''))
+  })
+}
+
+// 处理登录：校验密码 → 成功设会话 cookie 重定向 /；失败限速 + 返回登录页
+async function handleLogin(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+  const ip = clientIp(req)
+  const body = await readFormBody(req)
+  const params = new URLSearchParams(body)
+  const password = params.get('password') ?? ''
+
+  if (!loginAllowed(ip)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.end(getLoginHtml('尝试过于频繁，请稍后再试'))
+    return
+  }
+
+  if (password && safeEqualPassword(password, AUTH_PASSWORD)) {
+    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${createSessionToken()}; Max-Age=${SESSION_MAX_AGE}; Path=/; HttpOnly; SameSite=Lax`)
+    res.statusCode = 303
+    res.setHeader('Location', '/')
+    res.end()
+    return
+  }
+
+  recordLoginFail(ip)
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
+  res.end(getLoginHtml('密码错误'))
+}
+
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -103,15 +229,38 @@ const server = http.createServer((req, res) => {
     return
   }
 
-  // 终端网页
+  // 终端网页（鉴权：无密码或已登录会话 → 终端页；否则 → 登录页）
   if (req.method === 'GET' && pathname === '/') {
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    res.end(getTerminalHtml())
+    if (isAuthorized(req, urlObj))
+      res.end(getTerminalHtml())
+    else
+      res.end(getLoginHtml())
     return
   }
 
-  // xterm 静态资源
+  // 登录
+  if (req.method === 'POST' && pathname === '/login') {
+    handleLogin(req, res)
+    return
+  }
+
+  // 登出
+  if (req.method === 'POST' && pathname === '/logout') {
+    res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`)
+    res.statusCode = 303
+    res.setHeader('Location', '/')
+    res.end()
+    return
+  }
+
+  // xterm 静态资源（鉴权：已配置密码时需有效会话）
   if (req.method === 'GET' && ASSET_MODULES[pathname]) {
+    if (!isAuthorized(req, urlObj)) {
+      res.statusCode = 401
+      res.end('Unauthorized')
+      return
+    }
     try {
       const abs = require.resolve(ASSET_MODULES[pathname])
       sendFile(res, abs)
@@ -136,14 +285,11 @@ server.on('upgrade', (req, socket, head) => {
     socket.destroy()
     return
   }
-  // 鉴权钩子（默认放行，AUTH_TOKEN 为空时不校验）
-  if (AUTH_TOKEN) {
-    const token = urlObj.searchParams.get('token')
-    if (token !== AUTH_TOKEN) {
-      socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n')
-      socket.destroy()
-      return
-    }
+  // 鉴权：无密码放行；有密码需有效会话 cookie 或 ?token=<密码>
+  if (AUTH_PASSWORD && !isAuthorized(req, urlObj)) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n')
+    socket.destroy()
+    return
   }
   wss.handleUpgrade(req, socket, head, ws => wss.emit('connection', ws, req))
 })
@@ -235,8 +381,10 @@ process.on('unhandledRejection', (err) => {
 
 server.listen(PORT, HOST, () => {
   console.log(`[bridge] 监听 ${HOST}:${PORT}`)
-  if (!AUTH_TOKEN)
-    console.log('[bridge] ⚠️ 未启用鉴权，同网任何人可执行命令')
+  if (AUTH_PASSWORD)
+    console.log('[bridge] ✓ 已启用密码鉴权，访问网页需登录')
+  else
+    console.log('[bridge] ⚠️ 未启用鉴权，同网任何人可执行命令（jie passwd 设置密码）')
 })
 
 process.on('SIGTERM', () => {

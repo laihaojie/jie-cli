@@ -8,6 +8,7 @@ import Table from 'cli-table3'
 import { author, homepage, name, version } from '../../package.json'
 import { localServer } from '../config'
 import { getLanIpv4Addresses } from '../utils/network'
+import { isAuthEnabled } from './server'
 
 function formatBytes(bytes: number) {
   const gb = bytes / 1024 / 1024 / 1024
@@ -224,6 +225,7 @@ export async function info(options: { cli?: boolean, all?: boolean }) {
       ['服务端口', chalk.green(port)],
       ['服务地址', chalk.green(`http://localhost:${port}`)],
       ['本地 IPv4', chalk.green(ips.length > 0 ? ips.map(ip => `http://${ip}:${port}`).join('\n') : '未连接')],
+      ['鉴权', isAuthEnabled() ? chalk.green('已启用（密码）') : chalk.yellow('未启用')],
     ])
   }
 
